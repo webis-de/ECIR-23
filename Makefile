@@ -17,9 +17,9 @@ clean:
 .venv:
 	@test -d $(VENV_NAME) || python3.6 -m venv $(VENV_NAME)
 	@sh -c ". $(VENV_NAME)/bin/activate && \
-		python3 -m pip install --upgrade pip && \
-		python3 -m pip install wheel && \
-		python3 -m pip install -r requirements.txt"
+		python3.6 -m pip install --upgrade pip && \
+		python3.6 -m pip install wheel && \
+		python3.6 -m pip install -r requirements.txt"
 
 tests: .venv
 	@PYTHONPATH=src/main/python .venv/bin/nosetests src/test/python
