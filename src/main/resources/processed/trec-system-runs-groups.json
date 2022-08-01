@@ -1,0 +1,18 @@
+{
+    "trec-system-runs/trec13/robust": {
+        "wdo": {"prefix": "input.wdo"},
+        "vtu": {"prefix": "input.vtu"},
+        "uog": {"prefix": "input.uog"},
+        "uic": {"prefix": "input.uic"},
+        "poly": {"prefix": "input.poly"},
+        "pirc": {"prefix": "input.pirc"},
+        "mpi": {"prefix": "input.mpi"},
+        "icl": {"prefix": "input.icl04"},
+        "hum": {"prefix": "input.humR04"},
+        "fub": {"prefix": "input.fub04"},
+        "apl": {"prefix": "input.apl04"},
+        "sab": {"prefix": "input.SABIR04"},
+        "nlp": {"prefix": "input.NLPR04"},
+        "juru": {"prefix": "input.Juru"}
+    }
+}
