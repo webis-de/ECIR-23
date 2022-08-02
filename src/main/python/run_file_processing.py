@@ -45,7 +45,7 @@ def normalize_run(run, depth=100):
     As implemented in trectools: https://github.com/joaopalotti/trectools/blob/master/trectools/trec_eval.py#L230
     """
 
-    trecformat = run.run_data.sort_values(["query", "score", "docid"], ascending=[True,False,False]).reset_index()
+    trecformat = run.run_data.copy().sort_values(["query", "score", "docid"], ascending=[True,False,False]).reset_index()
     topX = trecformat.groupby("query")[["query","docid","score"]].head(depth)
 
     # Make sure that rank position starts by 1
@@ -56,6 +56,25 @@ def normalize_run(run, depth=100):
     ret.run_data = topX
     
     return ret
+
+
+def make_top_x_pool(list_of_runs, depth):
+    pool_documents = {}
+
+    for run in list_of_runs:
+        run = normalize_run(run, depth)
+        
+        for _, i in run.run_data.iterrows():
+            topic = str(i['query'])
+            doc = str(i['docid'])
+            
+            if topic not in pool_documents:
+                pool_documents[topic] = set([])
+            
+            pool_documents[topic].add(doc)
+
+    return TrecPool(pool_documents)
+
 
 class IncompletePools():
     def __init__(self, run_dir, group_definition_file, trec_identifier):
@@ -81,5 +100,5 @@ class IncompletePools():
             runs_for_pooling += [run]
         
         assert skipped_runs == skipped_runs
-        return TrecPoolMaker().make_pool(runs_for_pooling, strategy="topX", topX=depth).pool
+        return make_top_x_pool(runs_for_pooling, depth).pool
 
