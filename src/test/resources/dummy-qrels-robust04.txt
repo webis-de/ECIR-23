@@ -1,0 +1,5 @@
+301 0 shared-doc-01 1
+301 0 doc-wdo-02 0
+301 0 doc-juru-02 0
+301 0 doc-wdo-01 2
+301 0 doc-juru-01 2

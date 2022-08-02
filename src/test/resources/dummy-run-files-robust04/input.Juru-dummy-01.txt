@@ -1,2 +1,3 @@
 301	Q0	doc-juru-01	0	3000	juru
 301	Q0	doc-juru-02	1	2009	juru
+301	Q0	shared-doc-01	2	2008	juru
