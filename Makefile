@@ -24,3 +24,6 @@ clean:
 tests: .venv
 	@PYTHONPATH=src/main/python .venv/bin/nosetests src/test/python
 
+run-tasks-in-slurm:
+	sbatch --array=0-100 src/main/sh/evaluate-all-runs-with-slurm.sh
+
