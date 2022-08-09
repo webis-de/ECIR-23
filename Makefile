@@ -12,6 +12,8 @@ help:
 	@echo "       run all evaluations"
 	@echo "make run-evaluation-tasks-in-slurm"
 	@echo "       run all evaluations in slurm (idempotent)"
+	@echo "make jupyterlab"
+	@echo "       start a jupyterlab server"
 
 
 clean:
@@ -33,4 +35,7 @@ run-evaluation-tasks:
 
 run-evaluation-tasks-in-slurm:
 	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l) src/main/sh/run-evaluation-tasks-in-slurm.sh
+
+jupyterlab:
+	.venv/bin/jupyter-lab
 
