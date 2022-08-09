@@ -70,20 +70,22 @@ def __normalize_runs(trec_identifier, working_directory):
         run.run_data.to_csv(run_name, sep=' ', header=False)
 
 
-def __create_incomplete_pools(trec_identifier, working_directory):
+def __create_pools_per_run(trec_identifier, working_directory):
     output_file = working_directory + 'processed/pool-documents-per-run-' + normalize_identifier(trec_identifier) + '.json.gz'
     if exists(output_file):
-        return
+        return IncompletePools(pool_per_run_file=output_file)
 
     pooling = IncompletePools(working_directory + '/processed/normalized-runs/' + trec_identifier, working_directory + '/processed/trec-system-runs-groups.json', trec_identifier).pool_per_runs()
     
     with gzip.open(output_file, 'w') as f:
         f.write(json.dumps(pooling, sort_keys=True, indent=4).encode('UTF-8'))
 
+    return IncompletePools(pool_per_run_file=output_file)
+
 
 def prepare(trec_identifier, working_directory):
     __normalize_runs(trec_identifier, working_directory)
-    __create_incomplete_pools(trec_identifier, working_directory)
+    __create_pools_per_run(trec_identifier, working_directory)
 
 
 if __name__ == '__main__':

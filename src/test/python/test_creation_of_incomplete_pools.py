@@ -3,8 +3,8 @@ import json
 
 EXPECTED_POOL_ROBUST04_SAMPLES = {
     'depth-10-pool-incomplete-for-juru': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
-    'depth-10-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
     'depth-20-pool-incomplete-for-juru': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
+    'depth-10-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
     'depth-20-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
 }
 
@@ -25,12 +25,23 @@ def test_creation_of_incomplete_pools_for_small_robust04_samples():
     
     actual = pooling.create_all_incomplete_pools()
     
-    assert json.dumps(EXPECTED_POOL_ROBUST04_SAMPLES) == json.dumps(actual)
+    assert json.dumps(EXPECTED_POOL_ROBUST04_SAMPLES, sort_keys=True) == json.dumps(actual, sort_keys=True)
 
 def test_creation_of_pool_per_runs():
     pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
     
     actual = pooling.pool_per_runs()
-    print(actual)
-    assert json.dumps(EXPECTED_POOLS_PER_RUN_ON_ROBUST04_SAMPLES) == json.dumps(actual)
+
+    assert json.dumps(EXPECTED_POOLS_PER_RUN_ON_ROBUST04_SAMPLES, sort_keys=True) == json.dumps(actual, sort_keys=True)
+
+def test_creation_of_pool_for_run():
+    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
+    
+    actual = {k:v for (k,v) in pooling.create_incomplete_pools_for_run('src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt')}
+    expected = EXPECTED_POOL_ROBUST04_SAMPLES = {
+        'depth-10-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
+        'depth-20-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
+    }
+    
+    assert expected == actual
 

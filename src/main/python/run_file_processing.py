@@ -3,6 +3,7 @@ from trectools import TrecPool, TrecRun, TrecPoolMaker
 from pathlib import Path
 from tqdm import tqdm
 from copy import deepcopy
+import gzip
 
 class RunFileGroups():
     def __init__(self, group_definition_file, trec_identifier):
@@ -78,41 +79,63 @@ def make_top_x_pool(list_of_runs, depth):
 
 
 class IncompletePools():
-    def __init__(self, run_dir=None, group_definition_file=None, trec_identifier=None):
+    def __init__(self, run_dir=None, group_definition_file=None, trec_identifier=None, pool_per_run_file=None):
         self.__runs = load_all_runs(run_dir) if run_dir else None
         self.__run_file_groups = RunFileGroups(group_definition_file, trec_identifier).assign_runs_to_groups(self.__runs.keys()) if group_definition_file and trec_identifier else None
+        self.pool_per_run_file = pool_per_run_file
 
     def pool_per_runs(self):
-        ret = {'pool_entries': {10: {}, 20: {}}, 'groups': self.__run_file_groups}
+        if self.pool_per_run_file:
+            ret = json.load(gzip.open(self.pool_per_run_file))
+            self.__run_file_groups = ret['groups']
+            return ret
+
+        ret = {'pool_entries': {'10': {}, '20': {}}, 'groups': self.__run_file_groups}
         
         print('Create Pool Entries for all Runs.')
         for run_name, run in tqdm(self.__runs.items()):
             for depth in ret['pool_entries'].keys():
-                ret['pool_entries'][depth][run_name] = self.incomplete_pools([i for i in self.__runs.keys() if i != run_name], depth)
+                ret['pool_entries'][depth][run_name] = self.incomplete_pools([i for i in self.__runs.keys() if i != run_name], int(depth))
 
         return ret
 
     def create_all_incomplete_pools(self):
         ret = {}
-        pool_per_run = self.pool_per_runs()
-        
-        for depth in [10, 20]:
-            print('Create incomplete judgment pools at depth ' + str(depth))
-            for exclusion_group_name, runs_to_skip in tqdm(self.__run_file_groups.items()):
+        all_runs = set()
+        for _, runs_to_skip in self.__run_file_groups.items():
+            all_runs = all_runs.union(runs_to_skip)
+
+        for run in all_runs:
+            for pool_name, pool in self.create_incomplete_pools_for_run(run):
+                ret[pool_name] = pool
+
+        return ret
+
+
+    def create_incomplete_pools_for_run(self, run):
+        if not hasattr(self, 'pool_per_run'):
+            self.pool_per_run = self.pool_per_runs()
+
+        for depth in ['10', '20']:
+            for exclusion_group_name, runs_to_skip in self.__run_file_groups.items():
+                if run not in runs_to_skip:
+                    continue
+                
                 pool = None
-                for run_name, run_pool in pool_per_run['pool_entries'][depth].items():
+                
+                for run_name, run_pool in self.pool_per_run['pool_entries'][depth].items():
                     if run_name in runs_to_skip:
                         continue
                     if pool is None:
                         pool = deepcopy(run_pool)
                     
                     for topic, topic_pool in run_pool.items():
+                        if topic not in pool:
+                            pool[topic] = []
                         pool[topic] = pool[topic] + topic_pool
                 
                 pool = {k:sorted(list(set(v))) for k,v in pool.items()}
-                ret['depth-' + str(depth) + '-pool-incomplete-for-' + exclusion_group_name] = pool
-
-        return ret
+                yield ('depth-' + str(depth) + '-pool-incomplete-for-' + exclusion_group_name, pool)
 
     def incomplete_pools(self, runs_to_skip, depth):
         skipped_runs = 0
