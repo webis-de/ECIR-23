@@ -40,7 +40,7 @@ def run_task(task):
     
     qrel_file = 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
     pooling = IncompletePools(pool_per_run_file=task['working_directory'] + '/processed/pool-documents-per-run-' + normalize_identifier(task['trec_identifier']) + '.json.gz')
-    pools = {k:set(v) for k,v in pooling.create_incomplete_pools_for_run(task['run'])}
+    pools = {k:v for k,v in pooling.create_incomplete_pools_for_run(task['run'])}
     
     eval_result = evaluate_on_pools(task['run'], qrel_file, pools, task['measure'])
     eval_result['task'] = task
