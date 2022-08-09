@@ -8,10 +8,29 @@ EXPECTED_POOL_ROBUST04_SAMPLES = {
     'depth-20-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
 }
 
+EXPECTED_POOLS_PER_RUN_ON_ROBUST04_SAMPLES = {'pool_entries': {
+    10: {
+        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
+        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']}
+    },
+    20: {
+        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
+        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']}
+    }
+},
+'groups': {'juru': ['src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt'], 'wdo': ['src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt']}}
+
 def test_creation_of_incomplete_pools_for_small_robust04_samples():
     pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
     
     actual = pooling.create_all_incomplete_pools()
     
     assert json.dumps(EXPECTED_POOL_ROBUST04_SAMPLES) == json.dumps(actual)
+
+def test_creation_of_pool_per_runs():
+    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
+    
+    actual = pooling.pool_per_runs()
+    print(actual)
+    assert json.dumps(EXPECTED_POOLS_PER_RUN_ON_ROBUST04_SAMPLES) == json.dumps(actual)
 

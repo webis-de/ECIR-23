@@ -71,11 +71,11 @@ def __normalize_runs(trec_identifier, working_directory):
 
 
 def __create_incomplete_pools(trec_identifier, working_directory):
-    output_file = working_directory + 'processed/incomplete-pools-' + normalize_identifier(trec_identifier) + '.json.gz'
+    output_file = working_directory + 'processed/pool-documents-per-run-' + normalize_identifier(trec_identifier) + '.json.gz'
     if exists(output_file):
         return
 
-    pooling = IncompletePools(working_directory + '/processed/normalized-runs/' + trec_identifier, working_directory + '/processed/trec-system-runs-groups.json', trec_identifier).create_all_incomplete_pools()
+    pooling = IncompletePools(working_directory + '/processed/normalized-runs/' + trec_identifier, working_directory + '/processed/trec-system-runs-groups.json', trec_identifier).pool_per_runs()
     
     with gzip.open(output_file, 'w') as f:
         f.write(json.dumps(pooling, sort_keys=True, indent=4).encode('UTF-8'))
