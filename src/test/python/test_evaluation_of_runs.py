@@ -147,8 +147,7 @@ def test_condensed_ndcg_at_3_for_juru_run():
     qrel_file = 'src/test/resources/dummy-qrels-robust04.txt'
     measure = 'residual-ndcg@3'
     
-    expected = {
-    }
+    expected = {"complete-pool": [{"MIN-NDCG@3": 0.6645649565734895, "MAX-NDCG@3": 0.6645649565734895, "run_file": "src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt", "query": "301"}], "depth-10-pool-incomplete-for-juru": [{"MIN-NDCG@3": 0.19004688335796713, "MAX-NDCG@3": 0.8826803184943108, "run_file": "src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt", "query": "301"}], "depth-10-pool-incomplete-for-wdo": [{"MIN-NDCG@3": 0.9502344167898356, "MAX-NDCG@3": 0.9502344167898356, "run_file": "src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt", "query": "301"}], "depth-20-pool-incomplete-for-juru": [{"MIN-NDCG@3": 0.19004688335796713, "MAX-NDCG@3": 0.8826803184943108, "run_file": "src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt", "query": "301"}], "depth-20-pool-incomplete-for-wdo": [{"MIN-NDCG@3": 0.9502344167898356, "MAX-NDCG@3": 0.9502344167898356, "run_file": "src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt", "query": "301"}]}
 
     actual = evaluate_on_pools(run_file, qrel_file, EXPECTED_POOL_ROBUST04_SAMPLES, measure)
     print(json.dumps(actual))

@@ -30,6 +30,20 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
         ret = trec_eval.get_ndcg(depth, per_query=True, removeUnjudged=False)
     elif measure.startswith('condensed-ndcg@'):
         ret = trec_eval.get_ndcg(depth, per_query=True, removeUnjudged=True)
+    elif measure.startswith('residual-ndcg@'):
+        max_qrels = __create_max_residual_qrel(run, qrels, depth)
+        min_qrels = __create_min_residual_qrel(run, qrels, depth)
+        
+        trec_eval = TrecEval(run, max_qrels)
+        max_eval = trec_eval.get_ndcg(depth, per_query=True)
+        
+        trec_eval = TrecEval(run, min_qrels)
+        min_eval = trec_eval.get_ndcg(depth, per_query=True)
+        
+        min_eval = min_eval.rename(columns={'NDCG@' + str(depth): 'MIN-NDCG@' + str(depth)}, errors='raise')
+        max_eval = max_eval.rename(columns={'NDCG@' + str(depth): 'MAX-NDCG@' + str(depth)}, errors='raise')
+        
+        ret = min_eval.join(max_eval)
     else:
         raise ValueError('Can not handle measure "' + measure +'".')
 
