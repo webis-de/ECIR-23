@@ -67,7 +67,7 @@ def __normalize_runs(trec_identifier, working_directory):
     for run_name, run in load_all_runs(working_directory + '/unprocessed/' + trec_identifier).items():
         run = normalize_run(run)
         run_name = target_dir + '/' + run_name.split('/')[-1]
-        run.run_data.to_csv(run_name, sep=' ', header=False)
+        run.run_data.to_csv(run_name, sep=' ', header=False, index=False)
 
 
 def __create_pools_per_run(trec_identifier, working_directory):

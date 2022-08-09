@@ -48,7 +48,7 @@ def normalize_run(run, depth=100):
     """
 
     trecformat = run.run_data.copy().sort_values(["query", "score", "docid"], ascending=[True,False,False]).reset_index()
-    topX = trecformat.groupby("query")[["query","docid","score"]].head(depth)
+    topX = trecformat.groupby("query")[["query", "q0", "docid", "rank", "score", "system"]].head(depth)
 
     # Make sure that rank position starts by 1
     topX["rank"] = 1
