@@ -37,5 +37,5 @@ run-evaluation-tasks-in-slurm:
 	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l) src/main/sh/run-evaluation-tasks-in-slurm.sh
 
 jupyterlab:
-	.venv/bin/jupyter-lab
+	.venv/bin/jupyter-lab --ip 0.0.0.0
 
