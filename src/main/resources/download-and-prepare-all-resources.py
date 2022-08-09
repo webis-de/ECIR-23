@@ -89,7 +89,7 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
 
     for run_name in load_all_runs(working_directory + '/unprocessed/' + trec_identifier).keys():
         for measure in ['unjudged@10', 'unjudged@20', 'ndcg@10', 'ndcg@20', 'condensed-ndcg@10', 'condensed-ndcg@20', 'residual-ndcg@10', 'residual-ndcg@20']:
-            ret += [json.dumps({'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval-' + trec_identifier + '-' + str(len(ret)) + '.jsonl'})]
+            ret += [json.dumps({'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval/' + trec_identifier + '-' + str(len(ret)) + '.jsonl'})]
         
     with open(output_file, 'w') as f:
         f.write('\n'.join(ret))

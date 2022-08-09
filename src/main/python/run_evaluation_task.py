@@ -26,7 +26,13 @@ def __parse_args():
 
 
 def run_task(task):
-    print(task)
+    out_file = task['working_directory'] + '/' + task['out_file_name']
+    if exists(out_file):
+        return
+    
+    subprocess.check_output(['mkdir', '-p', os.path.abspath(str(Path(task['working_directory'] + '/' + task['out_file_name'])/ '..'))])
+    with open(out_file, 'w') as f:
+        f.write(json.dumps(task))
 
 
 if __name__ == '__main__':
