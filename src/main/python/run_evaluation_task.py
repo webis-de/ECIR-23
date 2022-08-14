@@ -61,12 +61,10 @@ if __name__ == '__main__':
     
     task = tasks[args.taskNumber]
     
-    if task_already_executed(task):
-        return
-
-    if type(task) == list:
-        for t in task:
-            run_task(t)
-    else:
-        run_task(task)
+    if not task_already_executed(task):
+        if type(task) == list:
+            for t in task:
+                run_task(t)
+        else:
+            run_task(task)
 
