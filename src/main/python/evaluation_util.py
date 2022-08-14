@@ -75,7 +75,7 @@ def __fully_judged_qrels_with_default_rel(run, qrels, depth, rel):
         
         judged_docs[i['query']].add(i['docid'])
     
-    for _, i in normalize_run(run).run_data.iterrows():
+    for _, i in normalize_run(run, depth).run_data.iterrows():
         if i['query'] not in judged_docs or i['docid'] not in judged_docs[i['query']]:
             additional_qrels += [{'query': i['query'],'q0': '0', 'docid': i['docid'], 'rel': rel}]
 
