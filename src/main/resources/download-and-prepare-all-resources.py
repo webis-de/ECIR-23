@@ -7,6 +7,8 @@ import sys
 import json
 from pathlib import Path
 import gzip
+from numpy import array_split
+
 
 if 'src/main/python/' not in sys.path:
     sys.path.append('src/main/python/')
@@ -95,10 +97,11 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
             'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
             'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
         ]:
-            ret += [json.dumps({'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval/' + trec_identifier + '-' + str(len(ret)) + '.jsonl'})]
+            ret += [{'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval/' + trec_identifier + '-' + str(len(ret)) + '.jsonl'}]
         
     with open(output_file, 'w') as f:
-        f.write('\n'.join(ret))
+        for split in array_split(ret, 900):
+            f.write(json.dumps(list(split)) + '\n')
 
 
 def prepare(trec_identifier, working_directory):

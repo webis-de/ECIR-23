@@ -31,10 +31,16 @@ def __parse_args():
     return parser.parse_args()
 
 
+def task_already_executed(task):
+    if type(task) == list:
+        return task_already_executed(task[0])
+    
+    out_file = task['working_directory'] + '/' + task['out_file_name']
+    return exists(out_file)
+
+
 def run_task(task):
     out_file = task['working_directory'] + '/' + task['out_file_name']
-    if exists(out_file):
-        return
     
     subprocess.check_output(['mkdir', '-p', os.path.abspath(str(Path(task['working_directory'] + '/' + task['out_file_name'])/ '..'))])
     
@@ -45,12 +51,22 @@ def run_task(task):
     eval_result = evaluate_on_pools(task['run'], qrel_file, pools, task['measure'])
     eval_result['task'] = task
     
-    with open(out_file, 'w') as f:
-        f.write(json.dumps(eval_result))
+    with open(out_file, 'w+') as f:
+        f.write(json.dumps(eval_result) + '\n')
 
 
 if __name__ == '__main__':
     args = __parse_args()
     tasks = [json.loads(i) for i in open(args.taskDefinititionFile)]
-    run_task(tasks[args.taskNumber])
+    
+    task = tasks[args.taskNumber]
+    
+    if task_already_executed(task):
+        return
+
+    if type(task) == list:
+        for t in task:
+            run_task(t)
+    else:
+        run_task(task)
 
