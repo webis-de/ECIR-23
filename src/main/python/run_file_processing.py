@@ -117,6 +117,7 @@ class IncompletePools():
             self.pool_per_run = self.pool_per_runs()
 
         for depth in ['10', '20']:
+            yield ('complete-pool-depth-' + str(depth), self.complete_pool_at_depth(depth))
             for exclusion_group_name, runs_to_skip in self.__run_file_groups.items():
                 if run not in runs_to_skip:
                     continue
@@ -136,6 +137,22 @@ class IncompletePools():
                 
                 pool = {k:sorted(list(set(v))) for k,v in pool.items()}
                 yield ('depth-' + str(depth) + '-pool-incomplete-for-' + exclusion_group_name, pool)
+
+    def complete_pool_at_depth(self, depth):
+        if not hasattr(self, 'pool_per_run'):
+            self.pool_per_run = self.pool_per_runs()
+        
+        pool = None
+        for run_name, run_pool in self.pool_per_run['pool_entries'][depth].items():
+            if pool is None:
+                pool = deepcopy(run_pool)
+                    
+            for topic, topic_pool in run_pool.items():
+                if topic not in pool:
+                    pool[topic] = []
+                pool[topic] = pool[topic] + topic_pool
+
+        return {k:sorted(list(set(v))) for k,v in pool.items()}
 
     def incomplete_pools(self, runs_to_skip, depth):
         skipped_runs = 0

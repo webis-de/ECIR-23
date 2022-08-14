@@ -6,10 +6,7 @@ from run_file_processing import normalize_run
 def evaluate_on_pools(run_file, qrel_file, pools, measure):
     run = TrecRun(run_file)
     qrels = TrecQrel(qrel_file)
-    
-    ret = {
-        'complete-pool': __evaluate_run_on_pool(run, qrels, measure, None, run_file)
-    }
+    ret = {}
     
     for pool_name, pool in pools.items():
         assert pool_name not in ret

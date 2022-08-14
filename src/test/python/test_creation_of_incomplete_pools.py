@@ -2,6 +2,8 @@ from run_file_processing import IncompletePools
 import json
 
 EXPECTED_POOL_ROBUST04_SAMPLES = {
+    'complete-pool-depth-10': {'301': ['doc-juru-01', 'doc-juru-02', 'doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
+    'complete-pool-depth-20': {'301': ['doc-juru-01', 'doc-juru-02', 'doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
     'depth-10-pool-incomplete-for-juru': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
     'depth-20-pool-incomplete-for-juru': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
     'depth-10-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
@@ -38,10 +40,13 @@ def test_creation_of_pool_for_run():
     pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
     
     actual = {k:v for (k,v) in pooling.create_incomplete_pools_for_run('src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt')}
-    expected = EXPECTED_POOL_ROBUST04_SAMPLES = {
+    expected = {
+        'complete-pool-depth-10': {'301': ['doc-juru-01', 'doc-juru-02', 'doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
+        'complete-pool-depth-20': {'301': ['doc-juru-01', 'doc-juru-02', 'doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']},
         'depth-10-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
         'depth-20-pool-incomplete-for-wdo': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
     }
     
+    print(actual)
     assert expected == actual
 
