@@ -1,6 +1,7 @@
 from trectools import TrecRun, TrecQrel, TrecEval
 import pandas as pd
 from run_file_processing import normalize_run
+from bootstrap_util import evaluate_bootstrap
 
 
 def evaluate_on_pools(run_file, qrel_file, pools, measure):
@@ -99,6 +100,8 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
         max_eval = max_eval.rename(columns={'RBP@' + str(depth): 'MAX-RBP@' + str(depth)}, errors='raise')
         
         ret = min_eval.join(max_eval)
+    elif measure.startswith('bs-1000-ndcg@'):
+        ret = evaluate_bootstrap(run, qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     else:
         raise ValueError('Can not handle measure "' + measure +'".')
 
@@ -106,6 +109,12 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
 
 
 def normalize_eval_output(df, run_file_name):
+    if type(df) is dict:
+        for query, eval_results in df.items():
+            for k, v in eval_results.items():
+                yield {'run_file': run_file_name, 'query': query, k: v}
+        return
+            
     for q_id, i in df.iterrows():
         i['run_file'] = run_file_name
         i['query'] = q_id

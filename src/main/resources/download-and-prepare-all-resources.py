@@ -96,6 +96,7 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
             'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
             'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
             'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
+            'bs-1000-ndcg@10',
         ]:
             ret += [{'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval/' + trec_identifier + '-' + str(len(ret)) + '.jsonl'}]
         

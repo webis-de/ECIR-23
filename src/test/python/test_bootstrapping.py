@@ -1,5 +1,6 @@
 from bootstrap_util import create_substitute_pools, substitate_pools_with_effectivenes_scores, __rels_for_topic, __bootstraps_for_topic, evaluate_bootstrap
 from trectools import TrecRun, TrecQrel
+from evaluation_util import normalize_eval_output
 import json
 import pandas as pd
 
@@ -449,6 +450,39 @@ def test_bootstrap_with_some_relevant_and_some_irrelevant():
 
     expected = {'301': {'ndcg@10': [0.9197207891481876, 0.9197207891481876, 1.0, 0.9197207891481876, 1.0]}, '302': {'ndcg@10':  [0.6309297535714575, 0.6309297535714575, 0.6934264036172708, 0.6309297535714575, 0.6934264036172708]}}
     actual = evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1)
+    
+    print(actual)
+    print(expected)
+    
+    assert expected == actual
+
+
+
+def test_bootstrap_with_some_relevant_and_some_irrelevant_with_normalize_output():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-2', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+
+    expected = [
+        {'run_file': 'a', 'query': '301', 'ndcg@10': [0.9197207891481876, 0.9197207891481876, 1.0, 0.9197207891481876, 1.0]},
+        {'run_file': 'a', 'query': '302', 'ndcg@10': [0.6309297535714575, 0.6309297535714575, 0.6934264036172708, 0.6309297535714575, 0.6934264036172708]}
+    ]
+    actual = list(normalize_eval_output(evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1), 'a'))
     
     print(actual)
     print(expected)
