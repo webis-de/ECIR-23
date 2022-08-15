@@ -2,6 +2,7 @@ from run_file_processing import normalize_run
 import pandas as pd
 import json
 from copy import deepcopy
+from numpy import isnan
 from trectools import TrecQrel, TrecEval, TrecRun
 
 
@@ -13,9 +14,6 @@ def __unjudged_documents(run, qrels):
 
 
 def __single_bootstrap(rels, unjudged_docs, rand):
-    if unjudged_docs is None or len(unjudged_docs) == 0:
-        return 'all-judged'
-    
     ret = {}
     
     for doc in unjudged_docs:
@@ -49,6 +47,10 @@ def __rels_for_topic(run, qrels):
 def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
     unjudged = __unjudged_documents(run_for_topic, qrels_for_topic)
     qrels = set(qrels_for_topic['rel'].unique())
+    
+    if unjudged is None or len(unjudged) == 0:
+        return ['{}']
+
     ret = []
     for unjudged_doc in unjudged:
         tmp_ret = []
@@ -105,7 +107,9 @@ def __extract_single_topic(df, topic):
     df = df.values()
     assert len(df) == 1
     
-    return list(df)[0]
+    ret = list(df)[0]
+    
+    return 0 if isnan(ret) else ret
 
 
 def create_substitute_pools(run, qrels, depth):
@@ -117,5 +121,22 @@ def create_substitute_pools(run, qrels, depth):
         run_for_topic = run.run_data[run.run_data['query'] == topic]
         ret[topic] = __substitute_pools_for_topic(run_for_topic, qrels_for_topic)
     
+    return ret
+
+
+def evaluate_bootstrap(run, qrels, measure, repeat=5, seed=1):
+    substitute_pools = substitate_pools_with_effectivenes_scores(run, qrels, measure)
+    
+    depth = int(measure.split('@')[-1])
+    run = normalize_run(run, depth)
+    ret = {}
+    
+    for topic in substitute_pools.keys():
+        assert topic not in ret
+        ret[topic] = {measure: []}
+        run_for_topic = run.run_data[run.run_data['query'] == topic]
+        for bootstrap in __bootstraps_for_topic(run_for_topic, qrels.qrels_data, seed=seed, repeat=repeat):
+            ret[topic][measure] += [substitute_pools[topic][bootstrap]]
+
     return ret
 

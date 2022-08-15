@@ -1,4 +1,4 @@
-from bootstrap_util import create_substitute_pools, substitate_pools_with_effectivenes_scores, __rels_for_topic, __bootstraps_for_topic
+from bootstrap_util import create_substitute_pools, substitate_pools_with_effectivenes_scores, __rels_for_topic, __bootstraps_for_topic, evaluate_bootstrap
 from trectools import TrecRun, TrecQrel
 import json
 import pandas as pd
@@ -6,7 +6,7 @@ import pandas as pd
 def test_creation_of_substitute_pools_for_no_unjudged_documents():
     run = TrecRun('src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt')
     qrels = TrecQrel('src/test/resources/dummy-qrels-robust04.txt')
-    expected = {'301': []}
+    expected = {'301': ['{}']}
     actual = create_substitute_pools(run, qrels, 10)
     
     assert expected == actual
@@ -98,7 +98,7 @@ def test_creation_of_substitute_pools_for_only_unjudged_documents():
         json.dumps({'doc-juru-01': 3, 'doc-juru-02': 0, 'shared-doc-01': 3}, sort_keys=True),
         json.dumps({'doc-juru-01': 3, 'doc-juru-02': 3, 'shared-doc-01': 0}, sort_keys=True),
         json.dumps({'doc-juru-01': 3, 'doc-juru-02': 3, 'shared-doc-01': 3}, sort_keys=True),
-    ]), '302': []}
+    ]), '302': ['{}']}
     actual = create_substitute_pools(run, qrels, 10)
     
     print(actual)
@@ -241,7 +241,7 @@ def test_bootstraps_for_only_judged_documents():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = ['all-judged', 'all-judged', 'all-judged', 'all-judged', 'all-judged']
+    expected = ['{}', '{}', '{}', '{}', '{}']
     actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
     
     assert expected == actual
@@ -338,3 +338,120 @@ def test_bootstraps_for_single_unjudged_document_some_relevant_seed_1():
     print(expected)
     print(actual)
     assert expected == actual
+
+
+def test_bootstrap_end_to_end_all_judged_01():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-2', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-3', 'rel': 1},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        {'query': '302', 'q0': 0, 'docid': 'doc-3', 'rel': 1},
+    ])
+
+    expected = {'301': {'ndcg@10': [0.9197207891481876]*5}, '302': {'ndcg@10': [0.66967181649423]*5}}
+    actual = evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1)
+    
+    print(actual)
+    assert expected == actual
+
+
+def test_bootstrap_end_to_end_all_judged_02():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-2', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-3', 'rel': 1},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 2},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        {'query': '302', 'q0': 0, 'docid': 'doc-3', 'rel': 1},
+    ])
+
+    expected = {'301': {'ndcg@10': [1.0]*5}, '302': {'ndcg@10': [1.0]*5}}
+    actual = evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1)
+    
+    print(actual)
+    assert expected == actual
+
+
+def test_bootstrap_end_to_end_all_judged_03():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-20', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-3', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-20', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-3', 'rel': 0},
+    ])
+
+    expected = {'301': {'ndcg@10': [0.0]*5}, '302': {'ndcg@10': [0.0]*5}}
+    actual = evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1)
+    
+    print(actual)
+    assert expected == actual
+
+
+def test_bootstrap_with_some_relevant_and_some_irrelevant():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '302', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-2', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+
+    expected = {'301': {'ndcg@10': [0.9197207891481876, 0.9197207891481876, 1.0, 0.9197207891481876, 1.0]}, '302': {'ndcg@10':  [0.6309297535714575, 0.6309297535714575, 0.6934264036172708, 0.6309297535714575, 0.6934264036172708]}}
+    actual = evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1)
+    
+    print(actual)
+    print(expected)
+    
+    assert expected == actual
+
