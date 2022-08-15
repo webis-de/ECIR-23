@@ -5,12 +5,49 @@ from copy import deepcopy
 from trectools import TrecQrel, TrecEval, TrecRun
 
 
+def __unjudged_documents(run, qrels):
+    ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
+    ret = ret[ret["rel"].isnull()]
+    
+    return set(list(ret["docid"].unique()))
+
+
+def __single_bootstrap(rels, unjudged_docs, rand):
+    if unjudged_docs is None or len(unjudged_docs) == 0:
+        return 'all-judged'
+    
+    ret = {}
+    
+    for doc in unjudged_docs:
+        ret[doc] = rand.choice(rels)
+    
+    return json.dumps(ret, sort_keys=True)
+
+
+def __bootstraps_for_topic(run, qrels, repeat, seed=None):
+    from random import Random
+    
+    rand = Random() if seed is None else Random(seed)
+
+    
+    rels = __rels_for_topic(run, qrels)
+    unjudged_docs = __unjudged_documents(run, qrels)
+    
+    ret = []
+    for i in range(repeat):
+        ret += [__single_bootstrap(rels, unjudged_docs, rand)]
+        
+    return ret
+    
+def __rels_for_topic(run, qrels):
+    ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
+    ret = ret[~ret["rel"].isnull()]
+    
+    return [int(i) for i in ret['rel']]
+
+
 def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
-    unjudged = pd.merge(run_for_topic, qrels_for_topic[["query","docid","rel"]], how="left")
-    
-    unjudged = unjudged[unjudged["rel"].isnull()]
-    unjudged = set(list(unjudged["docid"].unique()))
-    
+    unjudged = __unjudged_documents(run_for_topic, qrels_for_topic)
     qrels = set(qrels_for_topic['rel'].unique())
     ret = []
     for unjudged_doc in unjudged:

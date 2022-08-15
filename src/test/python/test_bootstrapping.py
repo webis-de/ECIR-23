@@ -1,4 +1,4 @@
-from bootstrap_util import create_substitute_pools, substitate_pools_with_effectivenes_scores
+from bootstrap_util import create_substitute_pools, substitate_pools_with_effectivenes_scores, __rels_for_topic, __bootstraps_for_topic
 from trectools import TrecRun, TrecQrel
 import json
 import pandas as pd
@@ -151,3 +151,190 @@ def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_w
     print(actual)
     assert expected == actual
 
+
+def test_rels_for_topic_for_single_judged_doc():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-02', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+    
+    expected = [2]
+    actual = __rels_for_topic(run, qrels)
+    
+    assert expected == actual
+
+
+def test_rels_for_topic_for_multiple_judged_doc_01():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+    
+    expected = [0,0,0]
+    actual = __rels_for_topic(run, qrels)
+    
+    assert expected == actual
+
+
+def test_rels_for_topic_for_multiple_judged_doc_02():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+        {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+    
+    expected = [0,1,2]
+    actual = __rels_for_topic(run, qrels)
+    
+    assert sorted(expected) == sorted(actual)
+
+
+def test_bootstraps_for_only_judged_documents():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+        {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+    
+    expected = ['all-judged', 'all-judged', 'all-judged', 'all-judged', 'all-judged']
+    actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
+    
+    assert expected == actual
+
+
+def test_bootstraps_for_single_unjudged_document_only_irrelevant():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+    ])
+    
+    expected = [json.dumps({'doc-juru-02': 0}, sort_keys=True)]*5
+    actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
+    
+    print(expected)
+    print(actual)
+    assert expected == actual
+
+
+def test_bootstraps_for_two_unjudged_document_only_relevant():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+    ])
+    
+    expected = [json.dumps({'doc-juru-02': 1, 'shared-doc-01': 1}, sort_keys=True)]*5
+    actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
+    
+    print(expected)
+    print(actual)
+    assert expected == actual
+
+
+def test_bootstraps_for_single_unjudged_document_some_relevant_seed_0():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+    ])
+    
+    expected = [{'shared-doc-01': 0}, {'shared-doc-01': 0}, {'shared-doc-01': 1}, {'shared-doc-01': 0}, {'shared-doc-01': 0},]
+    expected = [json.dumps(i) for i in expected]
+    actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
+    
+    print(expected)
+    print(actual)
+    assert expected == actual
+
+
+
+def test_bootstraps_for_single_unjudged_document_some_relevant_seed_1():
+    run = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+    
+    qrels = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 0},
+        
+        {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+    ])
+    
+    expected = [{'shared-doc-01': 1}, {'shared-doc-01': 1}, {'shared-doc-01': 0}, {'shared-doc-01': 1}, {'shared-doc-01': 0},]
+    expected = [json.dumps(i) for i in expected]
+    actual = __bootstraps_for_topic(run, qrels, seed=1, repeat=5)
+    
+    print(expected)
+    print(actual)
+    assert expected == actual
