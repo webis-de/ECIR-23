@@ -17,7 +17,7 @@ def __single_bootstrap(representative_documents, unjudged_docs, rand):
     ret = {}
     tmp = str(representative_documents)
     representative_documents = rand.sample(representative_documents, len(unjudged_docs))
-    print(tmp + ' -> ' + str(representative_documents))
+    #print(tmp + ' -> ' + str(representative_documents))
     for doc in unjudged_docs:
         ret[doc] = representative_documents.pop()
     
@@ -137,7 +137,7 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
         for substitute_pool in substitute_pools:
             assert substitute_pool not in ret[topic]
             if len(substitute_pools) > 100:
-                ret[topic][substitute_pool] = flaot('NaN')
+                ret[topic][substitute_pool] = float('NaN')
             else:
                 ret[topic][substitute_pool] = __extract_single_topic(TrecEval(__create_run_for_topic(run, topic, substitute_pool), qrels_for_topic).get_ndcg(depth, per_query=True, removeUnjudged=False), topic)
             
