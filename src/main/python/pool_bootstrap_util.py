@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from copy import deepcopy
 from numpy import isnan
+from tqdm import tqdm
 from trectools import TrecQrel, TrecEval, TrecRun
 
 
@@ -15,11 +16,13 @@ def __unjudged_documents(run, qrels):
 
 def __single_bootstrap(representative_documents, unjudged_docs, rand):
     ret = {}
-    tmp = str(representative_documents)
     representative_documents = rand.sample(representative_documents, len(unjudged_docs))
-    #print(tmp + ' -> ' + str(representative_documents))
-    for doc in unjudged_docs:
-        ret[doc] = representative_documents.pop()
+    
+    for doc in sorted(unjudged_docs):
+        for i in representative_documents.pop():
+            if i not in ret.values():
+                ret[doc] = i
+                break
     
     return json.dumps(ret, sort_keys=True)
 
@@ -32,12 +35,12 @@ def __rels_for_topic(run, qrels):
     qrels = __available_qrels_for_topic(run, qrels[qrels['query'] == topic_id])
     qrels = {k: v[:len(unjudged)] for k, v in qrels.items()}
     
-    ret = set()
+    ret = []
     for v in qrels.values():
         for i in v:
-            ret.add(i)
-            
-    return sorted(list(ret))
+            ret += [v]
+    
+    return sorted(ret)
 
 
 def __bootstraps_for_topic(run, qrels, repeat, seed=None):
@@ -127,7 +130,7 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
     run = normalize_run(run, depth)
     ret = {}
     
-    for topic, substitute_pools in create_substitute_pools(run, qrels, depth).items():
+    for topic, substitute_pools in tqdm(create_substitute_pools(run, qrels, depth).items()):
         assert topic not in ret
         ret[topic] = {}
         qrels_for_topic = __create_qrels_for_topic(qrels, topic)
@@ -170,17 +173,20 @@ def create_substitute_pools(run, qrels, depth):
 
 
 def evaluate_bootstrap(run, qrels, measure, repeat=5, seed=1):
+    print('Prepare substitute pools for bootstrapping')
     substitute_pools = substitate_pools_with_effectivenes_scores(run, qrels, measure)
     
     depth = int(measure.split('@')[-1])
     run = normalize_run(run, depth)
     ret = {}
-    
-    for topic in substitute_pools.keys():
+    print('Evaluate with Bootstrapping')
+    for topic in tqdm(substitute_pools.keys()):
         assert topic not in ret
         ret[topic] = {measure: []}
         run_for_topic = run.run_data[run.run_data['query'] == topic]
         for bootstrap in __bootstraps_for_topic(run_for_topic, qrels.qrels_data, seed=seed, repeat=repeat):
+            if bootstrap not in substitute_pools[topic]:
+                raise ValueError(f'Can not find \'{bootstrap}\' for topic {topic}.')
             ret[topic][measure] += [substitute_pools[topic][bootstrap]]
 
     return ret

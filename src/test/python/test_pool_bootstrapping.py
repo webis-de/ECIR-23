@@ -488,7 +488,7 @@ def test_rels_for_topic_for_single_judged_doc():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = ['doc-wdo-01', 'doc-wdo-02']
+    expected = [['doc-wdo-01'], ['doc-wdo-02']]
     actual = __rels_for_topic(run, qrels)
     print(actual)
     
@@ -538,7 +538,7 @@ def test_rels_for_topic_for_multiple_judged_doc_02():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = {'doc-wdo-01'}
+    expected = [['doc-wdo-01']]
     actual = __rels_for_topic(run, qrels)
     
     assert sorted(expected) == sorted(actual)    
@@ -563,7 +563,7 @@ def test_rels_for_topic_for_multiple_judged_doc_03():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = {'doc-wdo-01'}
+    expected = [['doc-wdo-01']]
     actual = __rels_for_topic(run, qrels)
     
     assert sorted(expected) == sorted(actual) 
@@ -594,7 +594,7 @@ def test_rels_for_topic_for_multiple_judged_doc_04():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = {'doc-wdo-01', 'a', 'c'}
+    expected = [['doc-wdo-01'], ['a'], ['c']]
     actual = __rels_for_topic(run, qrels)
     
     assert sorted(expected) == sorted(actual)
@@ -628,7 +628,7 @@ def test_rels_for_topic_for_multiple_judged_doc_05():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = {'doc-wdo-01', 'doc-wdo-02', 'a', 'b', 'c', 'd'}
+    expected = [['doc-wdo-01', 'doc-wdo-02'], ['doc-wdo-01', 'doc-wdo-02'], ['a', 'b'],  ['a', 'b'], ['c', 'd'], ['c', 'd']]
     actual = __rels_for_topic(run, qrels)
     
     assert sorted(expected) == sorted(actual) 
@@ -722,7 +722,7 @@ def test_bootstraps_for_two_unjudged_document_only_relevant_01():
             {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
         ])
     
-        expected = ['{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "b", "shared-doc-01": "a"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}']
+        expected = ['{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}']
         actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
     
         print(i)
@@ -749,8 +749,8 @@ def test_bootstraps_for_two_unjudged_document_only_relevant_02():
             {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
         ])
     
-        expected = ['{"doc-juru-02": "b", "shared-doc-01": "a"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "b", "shared-doc-01": "a"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "b", "shared-doc-01": "a"}']
-        actual = __bootstraps_for_topic(run, qrels, seed=3, repeat=5)
+        expected = ['{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}', '{"doc-juru-02": "a", "shared-doc-01": "b"}']
+        actual = __bootstraps_for_topic(run, qrels, seed=0, repeat=5)
     
         print(i)
         print(expected)
@@ -918,4 +918,23 @@ def test_bootstrap_with_some_relevant_and_some_irrelevant_with_normalize_output(
     print(expected)
     
     assert expected == actual
+
+
+def test_dasa():
+    for i in range(1):
+        from run_file_processing import IncompletePools
+        from evaluation_util import __adjust_qrels_to_pool
+        run = TrecRun('src/test/resources/sample-robust-04-run-for-topic-306.txt')
+        qrels = TrecQrel('src/test/resources/sample-robust-04-qrels-for-topic-306.txt')
+        pooling = IncompletePools(pool_per_run_file='src/main/resources/processed/pool-documents-per-run-trec-system-runs-trec13-robust.json.gz')
+        pool = {k:v for k,v in pooling.create_incomplete_pools_for_run('src/main/resources/processed/normalized-runs/trec-system-runs/trec13/robust/input.pircRB04td2.gz')}['depth-10-pool-incomplete-for-pirc']
+    
+        expected = [{'run_file': 'a', 'query': '306', 'ndcg@10': [0.3822360008387524, 0.3159817773843634, 0.3159817773843634, 0.42602766053340346, 0.42602766053340346, 0.3159817773843634, 0.3159817773843634, 0.4922818839877925, 0.3822360008387524, 0.42602766053340346, 0.3822360008387524, 0.3159817773843634, 0.3822360008387524, 0.3822360008387524, 0.3159817773843634, 0.3822360008387524, 0.3822360008387524, 0.3822360008387524, 0.4922818839877925, 0.3822360008387524, 0.3822360008387524, 0.3822360008387524, 0.42602766053340346, 0.4922818839877925, 0.3822360008387524]}]
+    
+        actual = list(normalize_eval_output(evaluate_bootstrap(run, __adjust_qrels_to_pool(qrels, pool), 'ndcg@10', repeat=25, seed=1), 'a'))
+    
+        print(actual)
+        print(expected)
+    
+        assert expected == actual
 
