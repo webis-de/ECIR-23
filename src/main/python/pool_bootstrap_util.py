@@ -148,7 +148,8 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
 
 
 def __extract_single_topic(df, topic):
-    assert len(df) == 1
+    if len(df) != 1:
+        raise ValueError(f'I can not handle topic {topic} for df: {str(df)}')
     df = df.iloc[0]
     assert topic == df.name
     df = dict(df)

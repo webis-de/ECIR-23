@@ -3,6 +3,7 @@ import pandas as pd
 from run_file_processing import normalize_run
 from bootstrap_util import evaluate_bootstrap
 import pool_bootstrap_util as pool_bs
+from copy import deepcopy
 
 
 def evaluate_on_pools(run_file, qrel_file, pools, measure):
@@ -64,7 +65,7 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     trec_eval = TrecEval(run, qrels)
     ret = None
     depth = int(measure.split('@')[-1])
-    
+        
     if measure.startswith('unjudged@'):
         ret = trec_eval.get_unjudged(depth, per_query=True)
     elif measure.startswith('ndcg@'):
@@ -76,26 +77,20 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     elif measure.startswith('condensed-ndcg@'):
         ret = trec_eval.get_ndcg(depth, per_query=True, removeUnjudged=True)
     elif measure.startswith('residual-ndcg@'):
-        max_qrels = __create_max_residual_qrel(run, qrels, depth)
-        min_qrels = __create_min_residual_qrel(run, qrels, depth)
-        
-        trec_eval = TrecEval(run, max_qrels)
-        max_eval = trec_eval.get_ndcg(depth, per_query=True)
-        
-        trec_eval = TrecEval(run, min_qrels)
-        min_eval = trec_eval.get_ndcg(depth, per_query=True)
+        max_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='max', adjust_idcg=False).get_ndcg(depth, per_query=True)
+        min_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='min', adjust_idcg=False).get_ndcg(depth, per_query=True)
         
         min_eval = min_eval.rename(columns={'NDCG@' + str(depth): 'MIN-NDCG@' + str(depth)}, errors='raise')
         max_eval = max_eval.rename(columns={'NDCG@' + str(depth): 'MAX-NDCG@' + str(depth)}, errors='raise')
         
         ret = min_eval.join(max_eval)
     elif measure.startswith('residual-rbp@'):
-        max_qrels = __create_max_residual_qrel(run, qrels, depth)
-        min_qrels = __create_min_residual_qrel(run, qrels, depth)
+        max_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='max', adjust_idcg=True)
+        min_qrels = __create_residual_trec_eval(run, qrels, depth, residual_type='min', adjust_idcg=True)
         
-        max_eval = __eval_rbp(run, max_qrels, depth, removeUnjudged=False)
+        max_eval = __eval_rbp(max_eval.run, max_eval.qrels, depth, removeUnjudged=False)
         
-        min_eval =  __eval_rbp(run, min_qrels, depth, removeUnjudged=False)
+        min_eval =  __eval_rbp(min_qrels.run, min_qrels.qrels, depth, removeUnjudged=False)
         
         min_eval = min_eval.rename(columns={'RBP@' + str(depth): 'MIN-RBP@' + str(depth)}, errors='raise')
         max_eval = max_eval.rename(columns={'RBP@' + str(depth): 'MAX-RBP@' + str(depth)}, errors='raise')
@@ -111,6 +106,72 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     return list(normalize_eval_output(ret, run_file_name))
 
 
+def __unjudged_documents(run, qrels):
+    ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
+    ret = ret[ret["rel"].isnull()]
+    
+    return set(list(ret["docid"].unique()))
+
+
+def __docs_for_max_residual_trec_eval(run_for_topic, qrels_for_topic, min_score):
+    pools = pool_bs.__available_qrels_for_topic(run_for_topic, qrels_for_topic)
+    ret = []
+    last_score = 1000000
+    
+    for k, v in pools.items():
+        if k < min_score:
+            continue
+        if last_score < k:
+            raise ValueError('Wrong sorting...')
+        
+        ret += v
+    
+    return ret
+
+
+def __create_residual_trec_eval(run, qrels, depth, residual_type, adjust_idcg):
+    if residual_type not in ['max', 'min']:
+        raise ValueError('Invalid type ' + residual_type)
+    
+    run = normalize_run(run, depth)
+    
+    if residual_type == 'min':
+        return TrecEval(run, qrels)
+    
+    new_run = []
+    additional_qrels = []
+    
+    for topic in run.topics():
+        run_for_topic = run.run_data[run.run_data['query'] == topic]
+        unjudged_documents = set(pool_bs.__unjudged_documents(run_for_topic, qrels.qrels_data))
+        qrels_for_topic = qrels.qrels_data[qrels.qrels_data['query'] == topic]
+        
+        min_score = 1
+        
+        if adjust_idcg:
+            min_score = qrels_for_topic['rel'].max()
+        
+        remaining_positive_docs = __docs_for_max_residual_trec_eval(run_for_topic, qrels_for_topic, min_score)
+
+
+        for _, i in run_for_topic.iterrows():
+            i = deepcopy(dict(i))
+            if i['docid'] in unjudged_documents and len(remaining_positive_docs) == 0 and adjust_idcg:
+                additional_qrels += [{'query': topic, 'q0': 0, 'docid': i['docid'], 'rel': min_score}]
+            elif i['docid'] in unjudged_documents and len(remaining_positive_docs) > 0:
+                i['docid'] = remaining_positive_docs.pop()
+            
+            new_run += [i]
+
+    additional_qrels = pd.concat([qrels.qrels_data, pd.DataFrame(additional_qrels)])
+    qrels = TrecQrel()
+    qrels.qrels_data = additional_qrels
+
+    run = TrecRun()
+    run.run_data = pd.DataFrame(new_run)
+
+    return TrecEval(run, qrels)
+
 def normalize_eval_output(df, run_file_name):
     if type(df) is dict:
         for query, eval_results in df.items():
@@ -122,34 +183,6 @@ def normalize_eval_output(df, run_file_name):
         i['run_file'] = run_file_name
         i['query'] = q_id
         yield dict(i)
-
-
-def __create_max_residual_qrel(run, qrels, depth):
-    return __fully_judged_qrels_with_default_rel(run, qrels, depth, qrels.qrels_data['rel'].max())
-
-
-def __create_min_residual_qrel(run, qrels, depth):
-    return __fully_judged_qrels_with_default_rel(run, qrels, depth, 0)
-
-
-def __fully_judged_qrels_with_default_rel(run, qrels, depth, rel):
-    additional_qrels = []
-
-    judged_docs = {}
-    for _, i in qrels.qrels_data.iterrows():
-        if i['query'] not in judged_docs:
-            judged_docs[i['query']] = set([])
-        
-        judged_docs[i['query']].add(i['docid'])
-    
-    for _, i in normalize_run(run, depth).run_data.iterrows():
-        if i['query'] not in judged_docs or i['docid'] not in judged_docs[i['query']]:
-            additional_qrels += [{'query': i['query'],'q0': '0', 'docid': i['docid'], 'rel': rel}]
-
-    ret = TrecQrel()
-    ret.qrels_data = pd.concat([qrels.qrels_data.copy(), pd.DataFrame(additional_qrels)])
-
-    return ret
 
 
 def __adjust_qrels_to_pool(qrels, pool):
