@@ -162,3 +162,17 @@ class TestResultAnalysisUtils(TestCase):
         
         self.assertEquals(actual, expected)
 
+
+    def test_results_are_correct_persisted_as_df(self):
+        model = ParametrizedBootstrappingModel('rmse[1,0]', [10, 25, 50, 75, 90])
+        expected = """                    depth-10-pool-incomplete-for-TBD                                               task
+0  [{'pbs-rmse[1,0]-bs-p-1000-ndcg@10-ndcg@10': 0...  {'run': 'a', 'measure': 'pbs-rmse[1,0]-bs-p-10..."""
+        
+        inp = load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl'))
+        ground_truth_data = load_ground_truth_data(inp, 'ndcg', 10, 'bs-p-1000-ndcg@10-ndcg@10', random_state=3)
+        cross_validation_results = StringIO(run_cross_validation(ground_truth_data, model=model).to_json(lines=True, orient='records'))
+        
+        actual = str(load_cross_validation_results(cross_validation_results, depth=10, return_as_df=True))
+        print(actual)
+        
+        self.assertEquals(actual, expected)

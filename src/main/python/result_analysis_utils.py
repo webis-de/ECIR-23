@@ -4,9 +4,10 @@ import json
 from tqdm import tqdm
 from numpy import isnan
 from copy import deepcopy
+from io import StringIO
 
 
-def load_cross_validation_results(input_data, depth):
+def load_cross_validation_results(input_data, depth, return_as_df=False):
     df = pd.read_json(input_data, lines=True, orient='records')
     
     ret = {}
@@ -33,8 +34,11 @@ def load_cross_validation_results(input_data, depth):
             measure = measure[0]
             
             final_ret += [{f"depth-{depth}-pool-incomplete-for-TBD": list(ret[model][run].values()), "task": {"run": run,  "measure": measure}}]      
-        
-    return final_ret
+    
+    if not return_as_df:
+        return final_ret
+    else:
+        return pd.read_json(StringIO('\n'.join(json.dumps(i) for i in final_ret)), lines=True)
 
 def run_cross_validation(ground_truth_data, model):
     ret = []
