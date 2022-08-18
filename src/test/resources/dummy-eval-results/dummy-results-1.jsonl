@@ -1,0 +1,18 @@
+{
+    "complete-pool-depth-10": [
+        {"NDCG@10": 1.0, "run_file": "a", "query": "1"},
+        {"NDCG@10": 0.0, "run_file": "a", "query": "2"},
+        {"NDCG@10": 1.0, "run_file": "a", "query": "3"},
+        {"NDCG@10": 0.0, "run_file": "a", "query": "4"}
+    ],
+    "depth-10-pool-incomplete-for-a": [
+        {"NDCG@10": -1.0, "run_file": "a", "query": "1"},
+        {"NDCG@10": -1.0, "run_file": "a", "query": "2"},
+        {"NDCG@10": -1.0, "run_file": "a", "query": "3"},
+        {"NDCG@10": -1.0, "run_file": "a", "query": "4"}
+    ],
+    "task": {
+        "run": "a",
+        "measure": "ndcg@10"
+    }
+}
