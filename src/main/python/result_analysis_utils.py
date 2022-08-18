@@ -6,6 +6,36 @@ from numpy import isnan
 from copy import deepcopy
 
 
+def load_cross_validation_results(input_data, depth):
+    df = pd.read_json(input_data, lines=True, orient='records')
+    
+    ret = {}
+    
+    for _, i in df.iterrows():
+        if i['model'] not in ret:
+            ret[i['model']] = {}
+
+        if i['run'] not in ret[i['model']]:
+            ret[i['model']][i['run']] = {}
+
+        if i['query'] in ret[i['model']][i['run']]:
+            raise ValueError('Duplicated stuff')
+
+        ret[i['model']][i['run']][i['query']] = {i['model'] + '-' + i['measures']['x']: i['y_prediction'], "run_file": i['run'], "query": i['query']}
+        
+    final_ret = []
+    
+    for model in ret:
+        for run in ret[model]:
+            measure = list(ret[model][run].values())[0]
+            measure = [i for i in measure if i not in ['run_file', 'query']]
+            assert len(measure) == 1
+            measure = measure[0]
+            
+            final_ret += [{f"depth-{depth}-pool-incomplete-for-TBD": list(ret[model][run].values()), "task": {"run": run,  "measure": measure}}]      
+        
+    return final_ret
+
 def run_cross_validation(ground_truth_data, model):
     ret = []
     

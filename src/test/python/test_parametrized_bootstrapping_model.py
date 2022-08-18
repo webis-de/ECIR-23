@@ -86,7 +86,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [1.0, 1.0, 0, 0])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
 
     def test_fitting_for_all_perfect_values_case_02(self):
@@ -96,7 +96,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         # all is perfect and we put weight on the lower bound, so we expect k=90
         model.fit([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [1.0, 1.0, 0, 0])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
 
     def test_fitting_for_all_perfect_values_case_03(self):
@@ -114,7 +114,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [1.0, 1.0, 0, 0])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
 
     def test_fitting_for_single_perfect_score(self):
@@ -124,7 +124,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [1.0, 1.0, 1.0, 1.0])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
 
     def test_fitting_for_single_almost_perfect_score_case_01(self):
@@ -134,7 +134,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0.75, 0.75, 0.75, 0.75])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
 
     def test_fitting_for_single_almost_perfect_score_case_02(self):
@@ -144,4 +144,4 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0.25, 0.25, 0.25, 0.25])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())

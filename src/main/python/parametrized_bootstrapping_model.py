@@ -83,7 +83,9 @@ class ParametrizedBootstrappingModel():
             
         raise ValueError('can not handle ' + self.__optimize_for)
 
-
     def __str__(self):
+        return 'pbs-' + self.__optimize_for
+
+    def parameters(self):
         return json.dumps({'model': 'ParametrizedBootstrappingModel', self.__optimize_for: self.__training_loss, 'quantile': self.__quantile, 'search_space_size': len(self.__search_space)})
     
