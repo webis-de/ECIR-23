@@ -34,7 +34,7 @@ run-evaluation-tasks:
 	@for i in {0..$(shell cat src/main/resources/all-tasks.jsonl|wc -l)}; do ./src/main/python/run_evaluation_task.py --taskDefinititionFile src/main/resources/all-tasks.jsonl --taskNumber  $$i; done
 
 run-evaluation-tasks-in-slurm:
-	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l) src/main/sh/run-evaluation-tasks-in-slurm.sh
+	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l)%90 src/main/sh/run-evaluation-tasks-in-slurm.sh
 
 jupyterlab:
 	.venv/bin/jupyter-lab --ip 0.0.0.0
