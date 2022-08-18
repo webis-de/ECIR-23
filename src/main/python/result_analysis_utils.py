@@ -3,6 +3,81 @@ import pandas as pd
 import json
 from tqdm import tqdm
 from numpy import isnan
+from copy import deepcopy
+
+
+def run_cross_validation(ground_truth_data, model):
+    ret = []
+    
+    for split in ground_truth_data['split'].unique():
+        train = ground_truth_data[ground_truth_data['split'] != split]
+        train_queries = train['query'].unique()
+        test = ground_truth_data[ground_truth_data['split'] == split]
+        
+        model.fit(list(train['x']), list(train['y']))
+        
+        for _, i in test.iterrows():
+            i = deepcopy(i.to_dict())
+            if i['query'] in train_queries:
+                raise ValueError('Invalid splits')
+            
+            i['y_prediction'] = model.predict([i['x']])
+            assert len(i['y_prediction']) == 1
+            i['y_prediction'] = i['y_prediction'][0]
+            i['model'] = str(model)
+            
+            ret += [i]
+
+    return pd.DataFrame(ret)
+
+
+def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, random_state=None):
+    if type(df) == list:
+        return load_ground_truth_data(load_evaluations(df), ground_truth_measure, depth, input_measure, random_state)
+    
+    if len(df) != 1:
+        raise ValueError('I expect exactly one run for the construction of the ground-truth data. Got ' + str(len(df)))
+    
+    df = df.iloc[0].to_dict()
+    
+    df = {
+        'run': df['run'].split('/')[-1].replace('input.', '').replace('.gz', ''),
+        'measures': {'x': input_measure, 'y': f'{ground_truth_measure}@{depth}'},
+        'x': json.loads(df[(f'depth-{depth}-incomplete', input_measure)]),
+        'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
+    }
+   
+    ret = []
+   
+    for query_id, y in df['y'].items():
+        if isnan(y):
+            continue
+        if query_id not in df['x'] or (type(df['x'][query_id]) is not list and isnan(df['x'][query_id])) or any([isnan(i) for i in df['x'][query_id]]):
+            continue
+        
+        ret += [{'run': df['run'], 'query': query_id, 'x': df['x'][query_id], 'y': y, 'measures': df['measures']}]
+    
+    ret = pd.DataFrame(ret)
+    splits = __train_test_split(ret, random_state)
+    ret['split'] = ret['query'].apply(lambda i: splits[i])
+    
+    return ret
+
+
+def __train_test_split(df, random_state):
+    from sklearn.model_selection import train_test_split
+    split_1, split_2, _, _ = train_test_split(df['query'], [None]*len(df), test_size=0.5, random_state=random_state)
+    
+    ret = {}
+    
+    for q in split_1:
+        ret[q] = 0
+    
+    for q in split_2:
+        ret[q] = 1
+
+    return ret
+
 
 def load_evaluations(files):
     return load_raw_evaluations(files).groupby('run').apply(__process_df)

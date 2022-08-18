@@ -37,3 +37,82 @@ class TestResultAnalysisUtils(TestCase):
         with self.assertRaises(ValueError) as context:
             load_evaluations(['src/test/resources/dummy-eval-results/dummy-results-1.jsonl', 'src/test/resources/dummy-eval-results/dummy-results-1.jsonl'])
 
+    def test_loading_ground_truth_data(self):
+        expected = """{"run":"a","query":"1","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0}
+{"run":"a","query":"2","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1}
+{"run":"a","query":"3","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0}
+{"run":"a","query":"4","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1}"""
+
+        # I want that this method can use multiple inputs
+        for inp in [glob('src/test/resources/dummy-eval-results/*.jsonl'), load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl'))]:
+            actual = load_ground_truth_data(inp, 'ndcg', 10, 'bs-p-1000-ndcg@10-ndcg@10', random_state=3).to_json(lines=True, orient='records')
+            print(actual)
+            self.assertEquals(expected, actual)
+
+
+    def test_cross_validation_with_model_returning_always_1_assuring_splits_are_correct(self):
+        class Tmp():
+            def fit(self, x, y):
+                print(x)
+                print(y)
+                if x == [[0,0,0,1], [0,0,0,1]] and y == [1.0, 1.0]:
+                    return
+                
+                if x == [[0,1,1,1], [0,1,1,1]] and y == [0.0, 0.0]:
+                    return
+                
+                raise ValueError('Invalid Input')
+                
+            def predict(self, X):
+                return [1]*len(X)
+
+            def __str__(self):
+                return 'tmp'
+
+        expected = """{"run":"a","query":"1","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0,"y_prediction":1,"model":"tmp"}
+{"run":"a","query":"3","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0,"y_prediction":1,"model":"tmp"}
+{"run":"a","query":"2","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1,"y_prediction":1,"model":"tmp"}
+{"run":"a","query":"4","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1,"y_prediction":1,"model":"tmp"}"""
+
+        # I want that this method can use multiple inputs
+        for inp in [glob('src/test/resources/dummy-eval-results/*.jsonl'), load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl'))]:
+            ground_truth_data = load_ground_truth_data(inp, 'ndcg', 10, 'bs-p-1000-ndcg@10-ndcg@10', random_state=3)
+            actual = run_cross_validation(ground_truth_data, model=Tmp())
+            actual = actual.to_json(lines=True, orient='records')
+            print(actual)
+            self.assertEquals(expected, actual)
+
+
+    def test_cross_validation_with_model_returning_always_0_assuring_splits_are_correct(self):
+        class Tmp():
+            def fit(self, x, y):
+                print(x)
+                print(y)
+                if x == [[0,0,0,1], [0,0,0,1]] and y == [1.0, 1.0]:
+                    return
+                
+                if x == [[0,1,1,1], [0,1,1,1]] and y == [0.0, 0.0]:
+                    return
+                
+                raise ValueError('Invalid Input')
+                
+            def predict(self, X):
+                return [0]*len(X)
+            
+            def __str__(self):
+                return 'tmp'
+
+        expected = """{"run":"a","query":"1","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"3","x":[0,0,0,1],"y":1.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":0,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"2","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"4","x":[0,1,1,1],"y":0.0,"measures":{"x":"bs-p-1000-ndcg@10-ndcg@10","y":"ndcg@10"},"split":1,"y_prediction":0,"model":"tmp"}"""
+
+        # I want that this method can use multiple inputs
+        for inp in [glob('src/test/resources/dummy-eval-results/*.jsonl'), load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl'))]:
+            ground_truth_data = load_ground_truth_data(inp, 'ndcg', 10, 'bs-p-1000-ndcg@10-ndcg@10', random_state=3)
+            actual = run_cross_validation(ground_truth_data, model=Tmp())
+            actual = actual.to_json(lines=True, orient='records')
+            print(actual)
+            self.assertEquals(expected, actual)
+            
+
