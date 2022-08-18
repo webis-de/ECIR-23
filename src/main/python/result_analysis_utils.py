@@ -7,7 +7,7 @@ from copy import deepcopy
 from io import StringIO
 
 
-def load_cross_validation_results(input_data, depth, return_as_df=False):
+def load_cross_validation_results(input_data, depth, return_buffers=False):
     df = pd.read_json(input_data, lines=True, orient='records')
     
     ret = {}
@@ -35,10 +35,10 @@ def load_cross_validation_results(input_data, depth, return_as_df=False):
             
             final_ret += [{f"depth-{depth}-pool-incomplete-for-TBD": list(ret[model][run].values()), "task": {"run": run,  "measure": measure}}]      
     
-    if not return_as_df:
+    if not return_buffers:
         return final_ret
     else:
-        return pd.read_json(StringIO('\n'.join(json.dumps(i) for i in final_ret)), lines=True)
+        return (StringIO(json.dumps(i)) for i in final_ret)
 
 def run_cross_validation(ground_truth_data, model):
     ret = []
@@ -167,6 +167,8 @@ def __rename_measure(m):
         return 'residual-rbp@20-max'
     if m == 'residual-rbp@20-MIN-RBP@20':
         return 'residual-rbp@20-min'
+    if 'rmse' in m.lower():
+        return m.lower()
     if m.lower() in ['bs-1000-ndcg@10-mean', 'bs-1000-ndcg@10-q-01', 'bs-1000-ndcg@10-q-10', 'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25', 'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10']:
         return m.lower()
 
@@ -187,6 +189,7 @@ def __process_row(df_row):
         k = (pool, k)
         assert k not in ret
         ret[k] = v
+        
 
     return ret
 
@@ -217,7 +220,11 @@ def load_raw_evaluations(files):
 def __load_eval_file(file_name, expected_queries=None, runs_to_skip=None):
     ret = []
     
-    eval_result = json.load(open(file_name, 'r'))
+    if type(file_name) is str:
+        eval_result = json.load(open(file_name, 'r'))
+    else:
+        eval_result = json.load(file_name)
+
     if runs_to_skip and eval_result['task']['run'] in RUNS_TO_SKIP:
         return None
     
@@ -232,7 +239,9 @@ def __load_eval_file(file_name, expected_queries=None, runs_to_skip=None):
             for eval_measure in result.keys():
                 if eval_measure in set(['run_file', 'query']):
                     continue
-                measure_name = eval_result['task']['measure'] + '-' + eval_measure
+                measure_name = eval_result['task']['measure']
+                if 'rmse' not in measure_name:
+                    measure_name +=  '-' + eval_measure
                 if measure_name not in scores:
                     scores[measure_name] = {}
                 
