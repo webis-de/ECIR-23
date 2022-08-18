@@ -5,6 +5,28 @@ from statistics import median
 import json
 
 
+class ReturnAlways1Model():
+    def fit(self, x, y):
+        pass
+
+    def predict(self, X):
+        return [1]*len(X)
+    
+    def __str__(self):
+        return 'always-1'
+
+
+class ReturnAlways0Model():
+    def fit(self, x, y):
+        pass
+
+    def predict(self, X):
+        return [0]*len(X)
+    
+    def __str__(self):
+        return 'always-0'
+
+
 class ParametrizedBootstrappingModel():
     def __init__(self, optimize_for, search_space=list(range(101))):
         self.__optimize_for = optimize_for
