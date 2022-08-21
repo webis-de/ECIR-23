@@ -118,14 +118,21 @@ def load_evaluations(files):
 
 
 def __rename_pooling(pool):
-    if pool.startswith('depth-10-pool-incomplete-for-'):
-        return 'depth-10-incomplete'
-    if pool == 'complete-pool-depth-10':
-        return 'depth-10-complete'
-    if pool == 'complete-pool-depth-20':
-        return 'depth-20-complete'
-    if pool.startswith('depth-20-pool-incomplete-for-'):
-        return 'depth-20-incomplete'
+    to_rename = {
+        'depth-10-pool-incomplete-for-': 'depth-10-incomplete',
+        'complete-pool-depth-10': 'depth-10-complete',
+        'complete-pool-depth-20': 'depth-20-complete',
+        'depth-20-pool-incomplete-for-': 'depth-20-incomplete',
+    }
+    
+    if pool in to_rename.values():
+        return pool
+    if pool in to_rename:
+        to_rename[pool]
+    
+    for k,v in to_rename.items():
+        if pool.startswith(k):
+            return v
     
     raise ValueError('I cant handle ' + str(pool))
 
@@ -161,6 +168,8 @@ def __rename_measure(m):
         return to_rename[m]
     if m.lower() in to_rename:
         return to_rename[m.lower()]
+    if 'rmse' in m.lower():
+        return m.lower()
 
 
 def __process_row(df_row):
