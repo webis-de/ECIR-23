@@ -131,46 +131,36 @@ def __rename_pooling(pool):
 
 
 def __rename_measure(m):
-    if m == 'unjudged@10-UNJ@10':
-        return 'unjudged@10'
-    if m == 'condensed-ndcg@10-NDCG@10':
-        return 'condensed-ndcg@10'
-    if m == 'residual-ndcg@10-MIN-NDCG@10':
-        return 'residual-ndcg@10-min'
-    if m == 'residual-ndcg@10-MAX-NDCG@10':
-        return 'residual-ndcg@10-max'
-    if m == 'ndcg@10-NDCG@10':
-        return 'ndcg@10'
-    if m == 'unjudged@20-UNJ@20':
-        return 'unjudged@20'
-    if m == 'condensed-ndcg@20-NDCG@20':
-        return 'condensed-ndcg@20'
-    if m == 'residual-ndcg@20-MIN-NDCG@20':
-        return 'residual-ndcg@20-min'
-    if m == 'residual-ndcg@20-MAX-NDCG@20':
-        return 'residual-ndcg@20-max'
-    if m == 'ndcg@20-NDCG@20':
-        return 'ndcg@20'
-    if m == 'rbp@10-RBP@10':
-        return 'rbp@10'
-    if m == 'condensed-rbp@10-RBP@10':
-        return 'condensed-rbp@10'
-    if m == 'residual-rbp@10-MAX-RBP@10':
-        return 'residual-rbp@10-max'
-    if m == 'residual-rbp@10-MIN-RBP@10':
-        return 'residual-rbp@10-min'
-    if m == 'rbp@20-RBP@20':
-        return 'rbp@20'
-    if m == 'condensed-rbp@20-RBP@20':
-        return 'condensed-rbp@20'
-    if m == 'residual-rbp@20-MAX-RBP@20':
-        return 'residual-rbp@20-max'
-    if m == 'residual-rbp@20-MIN-RBP@20':
-        return 'residual-rbp@20-min'
-    if 'rmse' in m.lower():
+    to_rename = {i.lower():i.lower() for i in ['rmse', 'bs-1000-ndcg@10-mean', 'bs-1000-ndcg@10-q-01', 'bs-1000-ndcg@10-q-10', 'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25', 'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10']}
+    to_rename.update({
+        'unjudged@10-UNJ@10': 'unjudged@10',
+        'condensed-ndcg@10-NDCG@10': 'condensed-ndcg@10',
+        'residual-ndcg@10-MIN-NDCG@10': 'residual-ndcg@10-min',
+        'residual-ndcg@10-MAX-NDCG@10': 'residual-ndcg@10-max',
+        'ndcg@10-NDCG@10': 'ndcg@10',
+        'unjudged@20-UNJ@20': 'unjudged@20',
+        'condensed-ndcg@20-NDCG@20': 'condensed-ndcg@20',
+        'residual-ndcg@20-MIN-NDCG@20': 'residual-ndcg@20-min',
+        'residual-ndcg@20-MAX-NDCG@20': 'residual-ndcg@20-max',
+        'ndcg@20-NDCG@20': 'ndcg@20',
+        'rbp@10-RBP@10': 'rbp@10',
+        'condensed-rbp@10-RBP@10': 'condensed-rbp@10',
+        'residual-rbp@10-MAX-RBP@10': 'residual-rbp@10-max',
+        'residual-rbp@10-MIN-RBP@10': 'residual-rbp@10-min',
+        'rbp@20-RBP@20': 'rbp@20',
+        'condensed-rbp@20-RBP@20': 'condensed-rbp@20',
+        'residual-rbp@20-MAX-RBP@20': 'residual-rbp@20-max',
+        'residual-rbp@20-MIN-RBP@20': 'residual-rbp@20-min',
+    })
+
+    if m in to_rename.values():
+        return m
+    if m.lower() in to_rename.values():
         return m.lower()
-    if m.lower() in ['bs-1000-ndcg@10-mean', 'bs-1000-ndcg@10-q-01', 'bs-1000-ndcg@10-q-10', 'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25', 'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10']:
-        return m.lower()
+    if m in to_rename:
+        return to_rename[m]
+    if m.lower() in to_rename:
+        return to_rename[m.lower()]
 
 
 def __process_row(df_row):
