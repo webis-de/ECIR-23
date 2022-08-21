@@ -75,7 +75,7 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
     df = df.iloc[0].to_dict()
     
     df = {
-        'run': df['run'].split('/')[-1].replace('input.', '').replace('.gz', ''),
+        'run': df['run'],
         'measures': {'x': input_measure, 'y': f'{ground_truth_measure}@{depth}'},
         'x': json.loads(df[(f'depth-{depth}-incomplete', input_measure)]),
         'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
@@ -170,6 +170,10 @@ def __rename_measure(m):
         return to_rename[m.lower()]
     if 'rmse' in m.lower():
         return m.lower()
+    if 'always-1' in m.lower():
+        return 'always-1'
+    if 'always-0' in m.lower():
+        return 'always-0'
 
 
 def __process_row(df_row):
@@ -188,14 +192,17 @@ def __process_row(df_row):
         k = (pool, k)
         assert k not in ret
         ret[k] = v
-        
-
+    
+    if len(ret) == 0:
+        raise ValueError('This can not happen')
+    
     return ret
 
 
 def __process_df(df):
     ret = {}
     run = df.iloc[0]['run']
+    
     for _, i in df.iterrows():
         assert i['run'] == run
         for k, v in __process_row(i).items():
@@ -213,7 +220,10 @@ def load_raw_evaluations(files):
     for eval_file in files:
         df += [__load_eval_file(eval_file)]
 
-    return pd.concat([i for i in df if i is not None])
+    ret = pd.concat([i for i in df if i is not None])
+    ret['run'] = ret['run'].apply(lambda i: i.split('/')[-1].replace('input.', '').replace('.gz', ''))
+    
+    return ret
 
 
 def __load_eval_file(file_name, expected_queries=None, runs_to_skip=None):
