@@ -53,7 +53,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'doc-wdo-01', 'shared-doc-01': 'doc-wdo-02'}, sort_keys=True)
     ]), '302': ['{}']}
@@ -115,7 +115,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_03():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True)
     ]), '302': ['{}']}
@@ -155,7 +155,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_diff
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
         json.dumps({'doc-juru-01': 'a-1', 'shared-doc-01': 'b-1'}, sort_keys=True),
@@ -206,7 +206,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_diff
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'a-2'}, sort_keys=True),
@@ -258,7 +258,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_diff
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'a-2'}, sort_keys=True),
@@ -275,7 +275,6 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_diff
     print(json.dumps(expected))
     
     assert expected == actual
-
 
 
 def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_different_qrels_huge_pool_02():
@@ -306,7 +305,7 @@ def test_creation_of_substitute_pools_for_some_unjudged_documents_with_many_diff
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': sorted([
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'a-2'}, sort_keys=True),
@@ -352,7 +351,7 @@ def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_w
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': {
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True): 0.3354350434265105,
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'a-2'}, sort_keys=True): 0.6012610260559063,
@@ -399,7 +398,7 @@ def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_w
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    #Unjudged are: doc-juru-01, shared-doc-01
+    # Unjudged are: doc-juru-01, shared-doc-01
     expected = {'301': {
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True): 0.3354350434265105,
         json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'a-2'}, sort_keys=True): 0.6012610260559063,
@@ -419,7 +418,6 @@ def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_w
     print(json.dumps(expected))
     
     assert expected == actual
-
 
 
 def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_with_many_different_qrels_huge_pool_03():
@@ -468,7 +466,6 @@ def test_substitate_pools_with_effectivenes_scores_for_some_unjudged_documents_w
     print(json.dumps(expected))
     
     assert expected == actual
-
 
 
 def test_rels_for_topic_for_single_judged_doc():
@@ -628,7 +625,8 @@ def test_rels_for_topic_for_multiple_judged_doc_05():
         {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
     ])
     
-    expected = [['doc-wdo-01', 'doc-wdo-02'], ['doc-wdo-01', 'doc-wdo-02'], ['a', 'b'],  ['a', 'b'], ['c', 'd'], ['c', 'd']]
+    expected = [['doc-wdo-01', 'doc-wdo-02'], ['doc-wdo-01', 'doc-wdo-02'], ['a', 'b'],  ['a', 'b'], ['c', 'd'],
+                ['c', 'd']]
     actual = __rels_for_topic(run, qrels)
     
     assert sorted(expected) == sorted(actual) 

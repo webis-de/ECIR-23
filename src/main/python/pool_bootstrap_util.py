@@ -56,12 +56,15 @@ def __bootstraps_for_topic(run, qrels, repeat, seed=None):
         ret += [__single_bootstrap(rels, unjudged_docs, rand)]
         
     return ret
-    
+
+
 def __available_qrels_for_topic(run_for_topic, qrels_for_topic):
     qrels_for_topic = qrels_for_topic[~qrels_for_topic['docid'].isin(run_for_topic['docid'].unique())]
     qrels_for_topic = qrels_for_topic.groupby('rel').aggregate({'docid': lambda x: sorted(list(x))}).reset_index()
     qrels = {i['rel']: i['docid'] for _, i in qrels_for_topic.iterrows()}
+
     return {k: qrels[k] for k in sorted(qrels.keys())}
+
 
 def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
     unjudged = sorted(__unjudged_documents(run_for_topic, qrels_for_topic))
@@ -69,7 +72,6 @@ def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
 
     if unjudged is None or len(unjudged) == 0:
         return ['{}']
-
 
     if sum([len(v) for v in qrels.values()]) < len(unjudged):
         raise ValueError('too few judged documents in pool. Expected ' + str(len(unjudged)) + ' but have only ' + str(sum([len(v) for v in qrels.values()])) + '.')
@@ -101,6 +103,7 @@ def __create_qrels_for_topic(qrels, topic):
     
     return ret
 
+
 def __create_run_for_topic(run, topic, substitute_pool):
     ret_df = []
     substitute_pool = json.loads(substitute_pool)
@@ -121,6 +124,7 @@ def __create_run_for_topic(run, topic, substitute_pool):
         ret.run_data = pd.DataFrame([{'query': topic, 'q0': 'Q0', 'docid': 'DUMMY-DOCUMENT-UNJUDGED', 'rank': 0, 'score': 3000, 'system': 'a'}])
 
     return ret
+
 
 def substitate_pools_with_effectivenes_scores(run, qrels, measure):
     if not measure.startswith('ndcg@'):
