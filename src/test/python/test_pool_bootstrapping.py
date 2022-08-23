@@ -850,7 +850,6 @@ def test_bootstrap_end_to_end_all_judged_02():
     assert expected == actual
 
 
-
 def test_bootstrap_end_to_end_all_judged_03():
     run = TrecRun()
     run.run_data = pd.DataFrame([

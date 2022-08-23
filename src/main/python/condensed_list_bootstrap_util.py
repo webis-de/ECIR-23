@@ -4,7 +4,7 @@ from pool_bootstrap_util import __unjudged_documents, __available_qrels_for_topi
     __create_qrels_for_topic
 from copy import deepcopy
 from tqdm import tqdm
-from trectools import TrecRun, TrecEval
+from trectools import TrecRun, TrecEval, TrecQrel
 import pandas as pd
 import numpy as np
 
@@ -32,6 +32,50 @@ def substitute_pools_for_condensed_lists_with_effectivenes_scores(run, qrels, me
                     TrecEval(__create_run_for_topic(run, topic, substitute_pool), qrels_for_topic)
                     .get_ndcg(depth, per_query=True, removeUnjudged=True), topic
                 )
+
+    return ret
+
+
+def __single_bootstrap(representative_documents, unjudged_docs, rand):
+    ret = {}
+    representative_documents = rand.sample(representative_documents, len(unjudged_docs))
+
+    for doc in sorted(unjudged_docs):
+        for i in representative_documents.pop():
+            if i == 'REMOVE-THIS-DOCUMENT' or i not in ret.values():
+                ret[doc] = i
+                break
+
+    return json.dumps(ret, sort_keys=True)
+
+def evaluate_bootstrap(run, qrels, measure, repeat=5, seed=1):
+    substitute_pools = substitute_pools_for_condensed_lists_with_effectivenes_scores(run, qrels, measure)
+
+    depth = int(measure.split('@')[-1])
+    run = normalize_run(run, depth)
+    ret = {}
+
+    for topic in substitute_pools.keys():
+        assert topic not in ret
+        ret[topic] = {measure: []}
+        run_for_topic = run.run_data[run.run_data['query'] == topic]
+        for bootstrap in __bootstraps_for_topic(run_for_topic, qrels.qrels_data, seed=seed, depth=depth, repeat=repeat):
+            ret[topic][measure] += [substitute_pools[topic][bootstrap]]
+
+    return ret
+
+
+def __bootstraps_for_topic(run, qrels, repeat, depth, seed=None):
+    from random import Random
+
+    rand = Random() if seed is None else Random(seed)
+
+    rels = __rels_for_topic(run, qrels, depth)
+    unjudged_docs = __unjudged_documents(run, qrels)
+
+    ret = []
+    for i in range(repeat):
+        ret += [__single_bootstrap(rels, unjudged_docs, rand)]
 
     return ret
 
@@ -128,3 +172,4 @@ def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
         ret = tmp_ret
 
     return sorted([json.dumps(i, sort_keys=True) for i in ret])
+

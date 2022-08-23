@@ -27,7 +27,6 @@ def __bootstraps_for_topic(run, qrels, repeat, seed=None):
     
     rand = Random() if seed is None else Random(seed)
 
-    
     rels = __rels_for_topic(run, qrels)
     unjudged_docs = __unjudged_documents(run, qrels)
     
@@ -36,7 +35,8 @@ def __bootstraps_for_topic(run, qrels, repeat, seed=None):
         ret += [__single_bootstrap(rels, unjudged_docs, rand)]
         
     return ret
-    
+
+
 def __rels_for_topic(run, qrels):
     ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
     ret = ret[~ret["rel"].isnull()]
@@ -76,6 +76,7 @@ def __create_qrels_for_topic(qrels, topic, substitute_pool):
     ret.qrels_data = pd.concat([qrels_for_topic, substitute_qrels_for_topic])
     
     return ret
+
 
 def substitate_pools_with_effectivenes_scores(run, qrels, measure):
     if not measure.startswith('ndcg@'):

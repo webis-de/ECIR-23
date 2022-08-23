@@ -41,13 +41,14 @@ def load_all_runs(run_dir):
         ret[str(run)] = TrecRun(run)
     return ret
 
+
 def normalize_run(run, depth=100):
     """
     Break score ties, etc, as in trec_eval.
     As implemented in trectools: https://github.com/joaopalotti/trectools/blob/master/trectools/trec_eval.py#L230
     """
 
-    trecformat = run.run_data.copy().sort_values(["query", "score", "docid"], ascending=[True,False,False]).reset_index()
+    trecformat = run.run_data.copy().sort_values(["query", "score", "docid"], ascending=[True, False, False]).reset_index()
     topX = trecformat.groupby("query")[["query", "q0", "docid", "rank", "score", "system"]].head(depth)
 
     # Make sure that rank position starts by 1
