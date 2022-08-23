@@ -27,7 +27,6 @@ class ProbabilityEstimator:
         for rel_level in rel_levels:
             for rank in tmp['rank']:
                 ret[rel_level] += self.estimate_single_probability(run, qrels, rel_level, k=rank)
-        print(ret)
         sum_ret = sum(ret)
         ret = [i/sum_ret for i in ret]
 
