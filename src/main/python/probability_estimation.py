@@ -8,8 +8,6 @@ def normalize_identifier(identifier):
 
 
 def load_pool_task(task):
-    out_file = task['working_directory'] + '/' + task['out_file_name']
-
     qrel_file = 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
     pooling = IncompletePools(
         pool_per_run_file=task['working_directory'] + '/processed/pool-documents-per-run-' + normalize_identifier(
