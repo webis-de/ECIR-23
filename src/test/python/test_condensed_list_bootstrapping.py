@@ -1,6 +1,7 @@
 from unittest import TestCase
 from condensed_list_bootstrap_util import create_substitute_pools_for_condensed_lists, \
     substitute_pools_for_condensed_lists_with_effectivenes_scores
+from condensed_list_bootstrap_util import __rels_for_topic as tmp___rels_for_topic
 from trectools import TrecRun, TrecQrel
 import pandas as pd
 import json
@@ -185,7 +186,6 @@ class TestCondensedListBootstrapping(TestCase):
 
         assert expected == actual
 
-
     def test_substitate_pools_with_effectivenes_scores_for_single_unjudged_document_with_single_qrels_huge_pool_02(self):
         run = TrecRun()
         run.run_data = pd.DataFrame([
@@ -227,3 +227,145 @@ class TestCondensedListBootstrapping(TestCase):
         print(json.dumps(expected))
 
         assert expected == actual
+
+    def test_rels_for_topic_for_multiple_judged_doc_01(self):
+        run = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+
+        qrels = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 0},
+
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        expected = []
+
+        actual = tmp___rels_for_topic(run, qrels, 3)
+        print(actual)
+
+        assert expected == actual
+
+    def test_rels_for_topic_for_multiple_judged_doc_02(self):
+        run = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+
+        qrels = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        # 33% are unjudged, so with uprounding I have to include one "remove this" entry
+        expected = [['doc-wdo-01'], ['REMOVE-THIS-DOCUMENT']]
+        actual = tmp___rels_for_topic(run, qrels, 3)
+        print(actual)
+        assert sorted(expected) == sorted(actual)
+
+    def test_rels_for_topic_for_multiple_judged_doc_03(self):
+        run = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+
+        qrels = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-02', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-03', 'rel': 0},
+
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        # 33% are unjudged, so with uprounding I have to include one "remove this" entry
+        expected = [['doc-wdo-01'], ['REMOVE-THIS-DOCUMENT']]
+        actual = tmp___rels_for_topic(run, qrels, 3)
+
+        assert sorted(expected) == sorted(actual)
+
+    def test_rels_for_topic_for_multiple_judged_doc_04(self):
+        run = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+
+        qrels = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-02', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-02', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-03', 'rel': 0},
+
+            {'query': '301', 'q0': 0, 'docid': 'a', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'b', 'rel': 1},
+
+            {'query': '301', 'q0': 0, 'docid': 'c', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'd', 'rel': 2},
+
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        expected = [['doc-wdo-01'], ['a'], ['c'], ['REMOVE-THIS-DOCUMENT']]
+        actual = tmp___rels_for_topic(run, qrels, 3)
+
+        assert sorted(expected) == sorted(actual)
+
+    def test_rels_for_topic_for_multiple_judged_doc_05(self):
+        run = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-02', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'shared-doc-01', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+
+        qrels = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-01', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-02', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'doc-wdo-03', 'rel': 0},
+
+            {'query': '301', 'q0': 0, 'docid': 'a', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'b', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'i', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'j', 'rel': 1},
+
+            {'query': '301', 'q0': 0, 'docid': 'c', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'd', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'k', 'rel': 2},
+            {'query': '301', 'q0': 0, 'docid': 'l', 'rel': 2},
+
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        # 33% are unjudged, so with uprounding I have to include four "remove this" entry
+        expected = [['doc-wdo-01', 'doc-wdo-02'], ['doc-wdo-01', 'doc-wdo-02'], ['a', 'b'], ['a', 'b'], ['c', 'd'],
+                    ['c', 'd'], ['REMOVE-THIS-DOCUMENT', 'REMOVE-THIS-DOCUMENT'],
+                    ['REMOVE-THIS-DOCUMENT', 'REMOVE-THIS-DOCUMENT'], ['REMOVE-THIS-DOCUMENT', 'REMOVE-THIS-DOCUMENT'],
+                    ['REMOVE-THIS-DOCUMENT', 'REMOVE-THIS-DOCUMENT']]
+        print(expected)
+        actual = tmp___rels_for_topic(run, qrels, 3)
+        print(actual)
+
+        assert sorted(expected) == sorted(actual)

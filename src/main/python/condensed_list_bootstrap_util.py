@@ -6,6 +6,7 @@ from copy import deepcopy
 from tqdm import tqdm
 from trectools import TrecRun, TrecEval
 import pandas as pd
+import numpy as np
 
 
 def substitute_pools_for_condensed_lists_with_effectivenes_scores(run, qrels, measure):
@@ -45,6 +46,27 @@ def create_substitute_pools_for_condensed_lists(run, qrels, depth):
         ret[topic] = __substitute_pools_for_topic(run_for_topic, qrels_for_topic)
 
     return ret
+
+
+def __rels_for_topic(run, qrels, depth):
+    topic_id = run['query'].unique()
+    assert len(topic_id) == 1
+    topic_id = topic_id[0]
+    unjudged = __unjudged_documents(run, qrels)
+    qrels = __available_qrels_for_topic(run, qrels[qrels['query'] == topic_id])
+    qrels = {k: v[:len(unjudged)] for k, v in qrels.items()}
+
+    add_for_unjudged = ['REMOVE-THIS-DOCUMENT']*len(unjudged)
+    print('--->' + str(len(add_for_unjudged)))
+    for i in range(int(np.ceil(depth*(len(unjudged)/depth)))):
+        qrels[f'unj-{i}'] = deepcopy(add_for_unjudged)
+
+    ret = []
+    for v in qrels.values():
+        for i in v:
+            ret += [v]
+
+    return sorted(ret)
 
 
 def __create_run_for_topic(run, topic, substitute_pool):
