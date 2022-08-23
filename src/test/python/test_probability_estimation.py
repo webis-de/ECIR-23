@@ -16,7 +16,6 @@ class TestProbabilityEstimation(TestCase):
         qrels.qrels_data = pd.DataFrame([
             {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
             {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
-            {'query': '301', 'q0': 0, 'docid': 'd3', 'rel': 0},
 
             # Some noise
             {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
@@ -24,11 +23,13 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        expected = 0.0001
         estimator = PoissonEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1, 1)
-
-        self.assertAlmostEqual(expected, actual, places=4)
+        actual = estimator.estimate_probabilities(run, qrels)
+        print(actual)
+        self.assertAlmostEqual(1.0, actual[0], places=4)
+        self.assertAlmostEqual(0.0000, actual[1], places=4)
+        self.assertAlmostEqual(0.0000, actual[2], places=4)
+        self.assertAlmostEqual(0.0000, actual[3], places=4)
 
     def test_probability_estimation_for_20_percent_relevant_docs_k_1(self):
         run = TrecRun()
@@ -50,11 +51,13 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        expected = 0.23884
         estimator = PoissonEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1, 1)
-
-        self.assertAlmostEqual(expected, actual, places=4)
+        actual = estimator.estimate_probabilities(run, qrels)
+        print(actual)
+        self.assertAlmostEqual(0.74134, actual[0], places=4)
+        self.assertAlmostEqual(0.25865, actual[1], places=4)
+        self.assertAlmostEqual(0.0000, actual[2], places=4)
+        self.assertAlmostEqual(0.0000, actual[3], places=4)
 
     def test_probability_estimation_for_20_percent_relevant_docs_k_2(self):
         run = TrecRun()
@@ -78,7 +81,7 @@ class TestProbabilityEstimation(TestCase):
 
         expected = 0.0398
         estimator = PoissonEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1, 2)
+        actual = estimator.estimate_single_probability(run, qrels, 1, 2)
 
         self.assertAlmostEqual(expected, actual, places=4)
 
@@ -104,7 +107,7 @@ class TestProbabilityEstimation(TestCase):
 
         expected = 0.0044
         estimator = PoissonEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1, 3)
+        actual = estimator.estimate_single_probability(run, qrels, 1, 3)
 
         self.assertAlmostEqual(expected, actual, places=4)
 
@@ -113,13 +116,10 @@ class TestProbabilityEstimation(TestCase):
         run.run_data = pd.DataFrame([
             {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
             {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
         ])
         qrels = TrecQrel()
         qrels.qrels_data = pd.DataFrame([
             {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
-            {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
-            {'query': '301', 'q0': 0, 'docid': 'd3', 'rel': 0},
 
             # Some noise
             {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
@@ -127,11 +127,14 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        expected = 0.0001
         estimator = CountProbabilityEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1)
+        actual = estimator.estimate_probabilities(run, qrels)
 
-        self.assertAlmostEqual(expected, actual, places=4)
+        print(actual)
+        self.assertAlmostEqual(0.9997, actual[0], places=4)
+        self.assertAlmostEqual(0.0001, actual[1], places=4)
+        self.assertAlmostEqual(0.0001, actual[2], places=4)
+        self.assertAlmostEqual(0.0001, actual[3], places=4)
 
     def test_probability_estimation_for_33_percent_relevant_docs_with_counting(self):
         run = TrecRun()
@@ -139,6 +142,7 @@ class TestProbabilityEstimation(TestCase):
             {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
             {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
             {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd4', 'rank': 2, 'score': 2998, 'system': 'a'},
         ])
         qrels = TrecQrel()
         qrels.qrels_data = pd.DataFrame([
@@ -152,11 +156,12 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        expected = 0.33333
         estimator = CountProbabilityEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1)
-
-        self.assertAlmostEqual(expected, actual, places=4)
+        actual = estimator.estimate_probabilities(run, qrels)
+        self.assertAlmostEqual(0.66653, actual[0], places=4)
+        self.assertAlmostEqual(0.33326, actual[1], places=4)
+        self.assertAlmostEqual(0.0001, actual[2], places=4)
+        self.assertAlmostEqual(0.0001, actual[3], places=4)
 
     def test_probability_estimation_for_run_independent_evaluation_with_counting(self):
         run = TrecRun()
@@ -170,16 +175,11 @@ class TestProbabilityEstimation(TestCase):
             {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
             {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
             {'query': '301', 'q0': 0, 'docid': 'd3', 'rel': 1},
-
-            # Some noise
-            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
-            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
-            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        expected = 0.33333
         estimator = RunIndependentCountProbabilityEstimator()
-        actual = estimator.estimate_probability(run, qrels, 1)
-
-        self.assertAlmostEqual(expected, actual, places=4)
-
+        actual = estimator.estimate_probabilities(run, qrels)
+        self.assertAlmostEqual(0.66653, actual[0], places=4)
+        self.assertAlmostEqual(0.33326, actual[1], places=4)
+        self.assertAlmostEqual(0.0001, actual[2], places=4)
+        self.assertAlmostEqual(0.0001, actual[3], places=4)

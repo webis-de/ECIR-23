@@ -8,7 +8,6 @@ def normalize_identifier(identifier):
 
 
 def load_pool_task(task):
-    qrel_file = 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
     pooling = IncompletePools(
         pool_per_run_file=task['working_directory'] + '/processed/pool-documents-per-run-' + normalize_identifier(
             task['trec_identifier']) + '.json.gz')
@@ -17,30 +16,49 @@ def load_pool_task(task):
     return pools
 
 
-class CountProbabilityEstimator:
-    def __init__(self, smoothing=0.0001):
-        self.__smoothing = smoothing
+class ProbabilityEstimator:
+    def estimate_probabilities(self, run, qrels):
+        tmp = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
+        tmp = tmp[tmp["rel"].isnull()]
 
-    def estimate_probability(self, run, qrels, relevance_level):
+        ret = [0, 0, 0, 0]
+        rel_levels = [0, 1, 2, 3]
+
+        for rel_level in rel_levels:
+            for rank in tmp['rank']:
+                ret[rel_level] += self.estimate_single_probability(run, qrels, rel_level, k=rank)
+        print(ret)
+        sum_ret = sum(ret)
+        ret = [i/sum_ret for i in ret]
+
+        return {rl: ret[rl] for rl in rel_levels}
+
+    def smoothing(self):
+        return 0.0001
+
+    def estimate_single_probability(self, run, qrels, rel_level, k=None):
+        pass
+
+
+class CountProbabilityEstimator(ProbabilityEstimator):
+    def estimate_single_probability(self, run, qrels, relevance_level, k=None):
         ret = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
         ret = ret[~ret["rel"].isnull()]
 
-        return max(len(ret[ret["rel"] == relevance_level])/len(ret), self.__smoothing)
+        return max(len(ret[ret["rel"] == relevance_level])/len(ret), super().smoothing())
 
 
-class RunIndependentCountProbabilityEstimator:
-    def __init__(self, smoothing=0.0001):
-        self.__smoothing = smoothing
-
-    def estimate_probability(self, run, qrels, relevance_level):
+class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
+    def estimate_single_probability(self, run, qrels, relevance_level,  k=None):
         qrels = qrels.qrels_data
 
-        return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), self.__smoothing)
+        return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), super().smoothing())
 
 
 class PoissonEstimator(CountProbabilityEstimator):
-    def estimate_probability(self, run, qrels, relevance_level, k=None):
-        return poisson.pmf(k=k, mu=super().estimate_probability(run, qrels, relevance_level))
+    def estimate_single_probability(self, run, qrels, relevance_level, k=None):
+        return poisson.pmf(k=k, mu=super().estimate_single_probability(run, qrels, relevance_level))
+
 
 
 # https://machinelearningmastery.com/softmax-activation-function-with-python/
