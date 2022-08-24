@@ -4,3 +4,4 @@ nose==1.3.7
 tqdm==4.64.0
 seaborn==0.11.2
 ir-measures==0.3.0
+approvaltests==5.5.1

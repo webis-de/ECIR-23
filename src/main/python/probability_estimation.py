@@ -55,9 +55,26 @@ class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
 
 
 class PoissonEstimator(CountProbabilityEstimator):
+    def estimate_probabilities(self, run, qrels):
+        ret = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
+
+        num_judged = len(ret[~ret["rel"].isnull()])
+        num_relevant = len(ret[ret["rel"] == 1])
+        p_relevant = num_relevant/num_judged
+        p_unjudged = (len(ret) - num_judged)/len(ret)
+
+        p_relevant_from_pool = len(qrels.qrels_data[qrels.qrels_data['rel'] == 1])/len(qrels.qrels_data)
+
+        p_add_from_pool_given_unjudged = poisson.pmf(k=num_relevant+1, mu=p_relevant_from_pool)
+
+        p_relevant_given_unjudged = (p_add_from_pool_given_unjudged * p_relevant)/p_unjudged
+
+        return {
+            0: 1 - p_relevant_given_unjudged,
+            1: p_relevant_given_unjudged,
+            2: 0,
+            3: 0,
+        }
+
     def estimate_single_probability(self, run, qrels, relevance_level, k=None):
-        return poisson.pmf(k=k, mu=super().estimate_single_probability(run, qrels, relevance_level))
-
-
-
-# https://machinelearningmastery.com/softmax-activation-function-with-python/
+        raise ValueError('Not implemented')

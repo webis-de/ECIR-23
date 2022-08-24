@@ -54,62 +54,10 @@ class TestProbabilityEstimation(TestCase):
         estimator = PoissonEstimator()
         actual = estimator.estimate_probabilities(run, qrels)
         print(actual)
-        self.assertAlmostEqual(0.74134, actual[0], places=4)
-        self.assertAlmostEqual(0.25865, actual[1], places=4)
+        self.assertAlmostEqual(0.94692, actual[0], places=4)
+        self.assertAlmostEqual(0.05307, actual[1], places=4)
         self.assertAlmostEqual(0.0000, actual[2], places=4)
         self.assertAlmostEqual(0.0000, actual[3], places=4)
-
-    def test_probability_estimation_for_20_percent_relevant_docs_k_2(self):
-        run = TrecRun()
-        run.run_data = pd.DataFrame([
-            {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd4', 'rank': 3, 'score': 2998, 'system': 'a'},
-        ])
-        qrels = TrecQrel()
-        qrels.qrels_data = pd.DataFrame([
-            {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
-            {'query': '301', 'q0': 0, 'docid': 'd4', 'rel': 1},
-            {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
-
-            # Some noise
-            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
-            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
-            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
-        ])
-
-        expected = 0.0398
-        estimator = PoissonEstimator()
-        actual = estimator.estimate_single_probability(run, qrels, 1, 2)
-
-        self.assertAlmostEqual(expected, actual, places=4)
-
-    def test_probability_estimation_for_20_percent_relevant_docs_k_3(self):
-        run = TrecRun()
-        run.run_data = pd.DataFrame([
-            {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
-            {'query': '301', 'q0': 'Q0', 'docid': 'd4', 'rank': 3, 'score': 2998, 'system': 'a'},
-        ])
-        qrels = TrecQrel()
-        qrels.qrels_data = pd.DataFrame([
-            {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
-            {'query': '301', 'q0': 0, 'docid': 'd4', 'rel': 1},
-            {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
-
-            # Some noise
-            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
-            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
-            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
-        ])
-
-        expected = 0.0044
-        estimator = PoissonEstimator()
-        actual = estimator.estimate_single_probability(run, qrels, 1, 3)
-
-        self.assertAlmostEqual(expected, actual, places=4)
 
     def test_probability_estimation_for_only_irrelevant_docs_with_counting(self):
         run = TrecRun()
@@ -183,3 +131,7 @@ class TestProbabilityEstimation(TestCase):
         self.assertAlmostEqual(0.33326, actual[1], places=4)
         self.assertAlmostEqual(0.0001, actual[2], places=4)
         self.assertAlmostEqual(0.0001, actual[3], places=4)
+
+
+
+# Add tests for an approach that uses simply the condensed thing as predictions
