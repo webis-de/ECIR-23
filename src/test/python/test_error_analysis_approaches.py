@@ -60,6 +60,8 @@ class TestErrorAnalysisApproaches(TestCase):
             'bad_run_unjudged_pos_5_difficult_topic': {0: 0.692, 1: 0.308, 2: 0.0, 3: 0.0}
         }
 
+
+
         actual = eval_probability_estimates(estimator)
 
         print(actual)
@@ -72,9 +74,41 @@ class TestErrorAnalysisApproaches(TestCase):
             'good_run_unjudged_pos_5_easy_topic': {0: 0.979, 1: 0.021, 2: 0, 3: 0},
             'good_run_unjudged_pos_5_difficult_topic': {0: 0.999, 1: 0.001, 2: 0, 3: 0},
             'bad_run_unjudged_pos_5_easy_topic': {0: 0.84, 1: 0.16, 2: 0, 3: 0},
-            'bad_run_unjudged_pos_5_difficult_topic': {0: 0.957, 1: 0.043, 2: 0, 3: 0}}
+            'bad_run_unjudged_pos_5_difficult_topic': {0: 0.957, 1: 0.043, 2: 0, 3: 0}
+        }
 
         actual = eval_probability_estimates(estimator)
 
         print(actual)
         self.assertEquals(expected, actual)
+
+    def test_probability_estimates_poison_rank_pool_more_positive_dependent(self):
+        estimator = PoissonEstimator(0)
+        # Run/Pool Dependent system...
+        expected = {
+            'good_run_unjudged_pos_5_easy_topic': {0: 0.884, 1: 0.116, 2: 0, 3: 0},
+            'good_run_unjudged_pos_5_difficult_topic': {0: 0.987, 1: 0.013, 2: 0, 3: 0},
+            'bad_run_unjudged_pos_5_easy_topic': {0: 0.561, 1: 0.439, 2: 0, 3: 0},
+            'bad_run_unjudged_pos_5_difficult_topic': {0: 0.717, 1: 0.283, 2: 0, 3: 0}
+        }
+
+        actual = eval_probability_estimates(estimator)
+
+        print(actual)
+        self.assertEquals(expected, actual)
+
+    def test_probability_estimates_poison_rank_pool_more_positive_dependent_2(self):
+        estimator = PoissonEstimator(0, 0, 0.025, 0.075)
+        # Run/Pool Dependent system...
+        expected = {
+            'good_run_unjudged_pos_5_easy_topic': {0: 0.77, 1: 0.23, 2: 0, 3: 0},
+            'good_run_unjudged_pos_5_difficult_topic': {0: 0.849, 1: 0.151, 2: 0, 3: 0},
+            'bad_run_unjudged_pos_5_easy_topic': {0: 0.923, 1: 0.077, 2: 0, 3: 0},
+            'bad_run_unjudged_pos_5_difficult_topic': {0: 0.95, 1: 0.05, 2: 0, 3: 0}
+        }
+
+        actual = eval_probability_estimates(estimator)
+
+        print(actual)
+        self.assertEquals(expected, actual)
+

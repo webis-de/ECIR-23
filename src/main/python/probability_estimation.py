@@ -48,13 +48,19 @@ class CountProbabilityEstimator(ProbabilityEstimator):
 
 
 class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
-    def estimate_single_probability(self, run, qrels, relevance_level,  k=None):
+    def estimate_single_probability(self, run, qrels, relevance_level, k=None):
         qrels = qrels.qrels_data
 
         return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), super().smoothing())
 
 
 class PoissonEstimator(CountProbabilityEstimator):
+    def __init__(self, to_add=1, p_add_from_pool_given_unjudged=None, lower_p=None, upper_p=None):
+        self.__to_add = to_add
+        self.__p_add_from_pool_given_unjudged = p_add_from_pool_given_unjudged
+        self.__lower_p = lower_p
+        self.__upper_p = upper_p
+
     def estimate_probabilities(self, run, qrels):
         ret = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
 
@@ -65,7 +71,13 @@ class PoissonEstimator(CountProbabilityEstimator):
 
         p_relevant_from_pool = len(qrels.qrels_data[qrels.qrels_data['rel'] == 1])/len(qrels.qrels_data)
 
-        p_add_from_pool_given_unjudged = poisson.pmf(k=num_relevant+1, mu=p_relevant_from_pool)
+        p_add_from_pool_given_unjudged = poisson.pmf(k=num_relevant + self.__to_add, mu=p_relevant_from_pool)
+
+        if self.__p_add_from_pool_given_unjudged:
+            p_add_from_pool_given_unjudged = self.__p_add_from_pool_given_unjudged
+
+        if self.__lower_p and self.__upper_p:
+            p_add_from_pool_given_unjudged = ((self.__upper_p - self.__lower_p) * p_relevant_from_pool) + self.__lower_p
 
         p_relevant_given_unjudged = (p_add_from_pool_given_unjudged * p_relevant)/p_unjudged
 
