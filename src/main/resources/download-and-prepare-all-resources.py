@@ -16,13 +16,18 @@ if 'src/main/python/' not in sys.path:
 from run_file_processing import IncompletePools, load_all_runs, normalize_run
 
 SEED_URLS = {
-    'trec-system-runs/trec13/robust': 'https://trec.nist.gov/results/trec13/robust.input.html'
+    'trec-system-runs/trec13/robust': 'https://trec.nist.gov/results/trec13/robust.input.html',
+
+    # Got the query reformulation runs thankfully from Timo Breuer
+    'uqv-runs-ecir21-paper': 'https://th-koeln.sciebo.de/s/PJm1l9JnoeHvkB7',
 }
 
 BACKUP_DIR = '/mnt/ceph/storage/data-in-progress/data-research/web-search/web-search-trec/'
 
+
 def normalize_identifier(identifier):
     return identifier.replace('/', '-')
+
 
 def __parse_args():
     parser = argparse.ArgumentParser(description='Download and prepare all resources.')
@@ -38,6 +43,7 @@ def __parse_args():
 
     return parser.parse_args()
 
+
 def __rsync_from_backup_if_possible(trec_identifier, working_directory):
     source_dir = BACKUP_DIR + trec_identifier
     if not exists(source_dir):
@@ -47,7 +53,7 @@ def __rsync_from_backup_if_possible(trec_identifier, working_directory):
 
 
 def __download_runs(target_directory, seed_url, trec_user, trec_password):
-    #subprocess.check_output(['bash', '-c', 'src/main/resources/trec-results-downloader.py']))
+    # subprocess.check_output(['bash', '-c', 'src/main/resources/trec-results-downloader.py']))
     pass
 
 
@@ -96,7 +102,7 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
             'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
             'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
             'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
-#            'bs-1000-ndcg@10',
+             # 'bs-1000-ndcg@10',
              'bs-p-1000-ndcg@10',
         ]:
             ret += [{'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier, 'working_directory': working_directory, 'out_file_name': 'eval/' + trec_identifier + '-' + str(len(ret)) + '.jsonl'}]
@@ -110,6 +116,7 @@ def prepare(trec_identifier, working_directory):
     __normalize_runs(trec_identifier, working_directory)
     __create_pools_per_run(trec_identifier, working_directory)
     __create_evaluation_tasks(trec_identifier, working_directory)
+
 
 if __name__ == '__main__':
     args = __parse_args()

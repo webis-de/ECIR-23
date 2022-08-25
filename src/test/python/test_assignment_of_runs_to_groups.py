@@ -1,5 +1,6 @@
 from run_file_processing import RunFileGroups
 
+
 def test_assignment_of_runs_to_groups_on_robust04():
     run_file_groups = RunFileGroups('src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
     
@@ -7,6 +8,7 @@ def test_assignment_of_runs_to_groups_on_robust04():
     actual = run_file_groups.assign_runs_to_groups(['trec-system-runs/trec13/robust/input.Juru.asd.gz'])
     
     assert expected == actual
+
 
 def test_assignment_of_runs_to_groups_fails_on_unknown_runs_for_robust04():
     run_file_groups = RunFileGroups('src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')

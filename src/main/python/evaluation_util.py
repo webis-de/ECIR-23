@@ -19,7 +19,7 @@ def evaluate_on_pools(run_file, qrel_file, pools, measure):
 
 
 def __qrels_to_ir_measures(qrels):
-    return qrels.qrels_data.copy().rename(columns={'docid':'doc_id', 'query': 'query_id', 'rel': 'relevance'})
+    return qrels.qrels_data.copy().rename(columns={'docid': 'doc_id', 'query': 'query_id', 'rel': 'relevance'})
 
 
 def __run_to_ir_measures(run):
@@ -62,7 +62,10 @@ def __eval_rbp(run, qrels, depth, removeUnjudged):
 
 def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     qrels = __adjust_qrels_to_pool(qrels, pool)
-    trec_eval = TrecEval(run, qrels)
+    return __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, pool, run_file_name)
+
+
+def __evaluate_trec_eval_on_pool(trec_eval,  measure, pool, run_file_name):
     ret = None
     depth = int(measure.split('@')[-1])
         
@@ -71,22 +74,22 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     elif measure.startswith('ndcg@'):
         ret = trec_eval.get_ndcg(depth, per_query=True, removeUnjudged=False)
     elif measure.startswith('rbp@'):
-        ret = __eval_rbp(run, qrels, depth, removeUnjudged=False)
+        ret = __eval_rbp(trec_eval.run, trec_eval.qrels, depth, removeUnjudged=False)
     elif measure.startswith('condensed-rbp@'):
-        ret = __eval_rbp(run, qrels, depth, removeUnjudged=True)
+        ret = __eval_rbp(trec_eval.run, trec_eval.qrels, depth, removeUnjudged=True)
     elif measure.startswith('condensed-ndcg@'):
         ret = trec_eval.get_ndcg(depth, per_query=True, removeUnjudged=True)
     elif measure.startswith('residual-ndcg@'):
-        max_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='max', adjust_idcg=False).get_ndcg(depth, per_query=True)
-        min_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='min', adjust_idcg=False).get_ndcg(depth, per_query=True)
+        max_eval = __create_residual_trec_eval(trec_eval.run, trec_eval.qrels, depth, residual_type='max', adjust_idcg=False).get_ndcg(depth, per_query=True)
+        min_eval = __create_residual_trec_eval(trec_eval.run, trec_eval.qrels, depth, residual_type='min', adjust_idcg=False).get_ndcg(depth, per_query=True)
         
         min_eval = min_eval.rename(columns={'NDCG@' + str(depth): 'MIN-NDCG@' + str(depth)}, errors='raise')
         max_eval = max_eval.rename(columns={'NDCG@' + str(depth): 'MAX-NDCG@' + str(depth)}, errors='raise')
         
         ret = min_eval.join(max_eval)
     elif measure.startswith('residual-rbp@'):
-        max_eval = __create_residual_trec_eval(run, qrels, depth, residual_type='max', adjust_idcg=True)
-        min_qrels = __create_residual_trec_eval(run, qrels, depth, residual_type='min', adjust_idcg=True)
+        max_eval = __create_residual_trec_eval(trec_eval.run, trec_eval.qrels, depth, residual_type='max', adjust_idcg=True)
+        min_qrels = __create_residual_trec_eval(trec_eval.run, trec_eval.qrels, depth, residual_type='min', adjust_idcg=True)
         
         max_eval = __eval_rbp(max_eval.run, max_eval.qrels, depth, removeUnjudged=False)
         
@@ -97,9 +100,9 @@ def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
         
         ret = min_eval.join(max_eval)
     elif measure.startswith('bs-1000-ndcg@'):
-        ret = evaluate_bootstrap(run, qrels, f'ndcg@{depth}', repeat=1000, seed=None)
+        ret = evaluate_bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     elif measure.startswith('bs-p-1000-ndcg@10'):
-        ret = pool_bs.evaluate_bootstrap(run, qrels, f'ndcg@{depth}', repeat=1000, seed=None)
+        ret = pool_bs.evaluate_bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     else:
         raise ValueError('Can not handle measure "' + measure +'".')
 

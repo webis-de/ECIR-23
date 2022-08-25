@@ -1,9 +1,10 @@
 import json
-from trectools import TrecPool, TrecRun, TrecPoolMaker
+from trectools import TrecPool, TrecRun
 from pathlib import Path
 from tqdm import tqdm
 from copy import deepcopy
 import gzip
+
 
 class RunFileGroups():
     def __init__(self, group_definition_file, trec_identifier):
@@ -27,11 +28,13 @@ class RunFileGroups():
         
         ret = []
         for group_name, group_definition in self.__groups.items():
-            assert set(['prefix']) == group_definition.keys() # Currently, we only support group definitions via prefixes
+            # Currently, we only support group definitions via prefixes
+            assert set(['prefix']) == group_definition.keys()
             if ('/' + group_definition['prefix']) in run:
                 ret += [group_name]
 
         return ret[0] if len(ret) == 1 else None
+
 
 def load_all_runs(run_dir):
     run_dir = Path(str(run_dir))
@@ -112,7 +115,6 @@ class IncompletePools():
 
         return ret
 
-
     def create_incomplete_pools_for_run(self, run):
         if not hasattr(self, 'pool_per_run'):
             self.pool_per_run = self.pool_per_runs()
@@ -142,7 +144,7 @@ class IncompletePools():
     def complete_pool_at_depth(self, depth):
         if not hasattr(self, 'pool_per_run'):
             self.pool_per_run = self.pool_per_runs()
-        
+
         pool = None
         for run_name, run_pool in self.pool_per_run['pool_entries'][depth].items():
             if pool is None:
@@ -153,7 +155,7 @@ class IncompletePools():
                     pool[topic] = []
                 pool[topic] = pool[topic] + topic_pool
 
-        return {k:sorted(list(set(v))) for k,v in pool.items()}
+        return {k: sorted(list(set(v))) for k, v in pool.items()}
 
     def incomplete_pools(self, runs_to_skip, depth):
         skipped_runs = 0
