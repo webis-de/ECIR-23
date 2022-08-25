@@ -18,6 +18,13 @@ def evaluate_on_pools(run_file, qrel_file, pools, measure):
     return ret
 
 
+def evaluate_on_original_pool_only(run_file, qrel_file, measure):
+    run = TrecRun(run_file)
+    qrels = TrecQrel(qrel_file)
+
+    return {'complete-pool': __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, run_file)}
+
+
 def __qrels_to_ir_measures(qrels):
     return qrels.qrels_data.copy().rename(columns={'docid': 'doc_id', 'query': 'query_id', 'rel': 'relevance'})
 
@@ -62,10 +69,10 @@ def __eval_rbp(run, qrels, depth, removeUnjudged):
 
 def __evaluate_run_on_pool(run, qrels, measure, pool, run_file_name):
     qrels = __adjust_qrels_to_pool(qrels, pool)
-    return __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, pool, run_file_name)
+    return __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, run_file_name)
 
 
-def __evaluate_trec_eval_on_pool(trec_eval,  measure, pool, run_file_name):
+def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
     ret = None
     depth = int(measure.split('@')[-1])
         
