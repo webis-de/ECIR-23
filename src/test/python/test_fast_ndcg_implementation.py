@@ -41,7 +41,7 @@ def fast_ndcg_eval(run, qrels, trec_eval):
     if len(ret) != 1:
         raise ValueError('Wrong')
 
-    return ret[0].calculate(None)
+    return ret['1'].calculate(None)
 
 
 class TestFastNdcgImplementation(TestCase):
@@ -136,6 +136,24 @@ class TestFastNdcgImplementation(TestCase):
 
         self.assertAlmostEqual(0.56157, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, True), 4)
         self.assertAlmostEqual(0.56157, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, False), 4)
+
+    def test_empty_ranking_few_relevant_many_irrelant(self):
+        run = create_run([])
+
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_FEW_RELEVANTS_MANY_IRRELEVANT, True), 4)
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_FEW_RELEVANTS_MANY_IRRELEVANT, False), 4)
+
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_FEW_RELEVANTS_MANY_IRRELEVANT, True), 4)
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_FEW_RELEVANTS_MANY_IRRELEVANT, False), 4)
+
+    def test_empty_ranking_many_relevant_few_irrelant(self):
+        run = create_run([])
+
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, True), 4)
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, False), 4)
+
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, True), 4)
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, False), 4)
 
     def test_permutation_test(self):
         raise ValueError('ToDo Implement')

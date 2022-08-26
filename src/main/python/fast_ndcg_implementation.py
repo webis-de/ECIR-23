@@ -41,8 +41,7 @@ class MemorizedNdcg:
 
         for query in queries:
             qrels_for_query = qrels.qrels_data[qrels.qrels_data['query'] == query]
-            run_for_query = run.run_data[run.run_data['query'] == query]
-            run_for_query = self.__ranking_with_labels(run_for_query, qrels_for_query)
+            run_for_query = self.__run_for_query(run, query, qrels_for_query)
             idcg, free_gains = self.__sum_dcg_(self.__perfect_ranking(qrels_for_query))
             if len(free_gains) != 0:
                 raise ValueError('IDCG calculation has free parameters')
@@ -56,7 +55,22 @@ class MemorizedNdcg:
                 query=query
             )]
 
-        return ret
+        tmp_ret = {}
+        for i in ret:
+            if i.query in tmp_ret:
+                raise ValueError('')
+
+            tmp_ret[i.query] = i
+
+        return tmp_ret
+
+    def __run_for_query(self, run, query, qrels_for_query):
+        try:
+            ret = run.run_data[run.run_data['query'] == query]
+        except:
+            ret = pd.DataFrame(columns=["query", "q0", "docid", "rank", "score", "system"])
+
+        return self.__ranking_with_labels(ret, qrels_for_query)
 
     def __sum_dcg_(self, run_with_rel):
         free_gains = {}
@@ -87,7 +101,7 @@ class MemorizedNdcg:
         relevant_docs = qrels_df[qrels_df.rel >= 0]
         selection = pd.merge(top_x, relevant_docs[["query", "docid", "rel"]], how="left")
 
-        if len(selection['query'].unique()) != 1:
+        if len(selection['query'].unique()) > 1:
             raise ValueError('I expect exactly one query')
 
         return selection
@@ -112,7 +126,7 @@ class ImmediateNdcgResultPerQuery:
         self.__idcg = idcg
         self.__dcg_incomplete = dcg_incomplete
         self.__free_gains = free_gains
-        self.__query = query
+        self.query = query
 
     def calculate(self, doc_rels):
         dcg = self.__dcg_incomplete
