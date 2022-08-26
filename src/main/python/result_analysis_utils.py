@@ -123,6 +123,7 @@ def __rename_pooling(pool):
         'complete-pool-depth-10': 'depth-10-complete',
         'complete-pool-depth-20': 'depth-20-complete',
         'depth-20-pool-incomplete-for-': 'depth-20-incomplete',
+        'complete-pool-depth-all': 'complete-pool'
     }
     
     if pool in to_rename.values():

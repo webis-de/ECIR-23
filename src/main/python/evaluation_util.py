@@ -22,7 +22,7 @@ def evaluate_on_original_pool_only(run_file, qrel_file, measure):
     run = TrecRun(run_file)
     qrels = TrecQrel(qrel_file)
 
-    return {'complete-pool': __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, run_file)}
+    return {'complete-pool-depth-all': __evaluate_trec_eval_on_pool(TrecEval(run, qrels), measure, run_file)}
 
 
 def __qrels_to_ir_measures(qrels):
@@ -30,16 +30,16 @@ def __qrels_to_ir_measures(qrels):
 
 
 def __run_to_ir_measures(run):
-    return run.run_data.copy().rename(columns={'docid':'doc_id', 'query': 'query_id'})
+    return run.run_data.copy().rename(columns={'docid': 'doc_id', 'query': 'query_id'})
 
 
 def __run_to_ir_measures_unjudged_removed(run, qrels, depth):
     run = run.copy()
     qrels = qrels.copy()
 
-    onlyjudged = pd.merge(run, qrels[["query","docid","rel"]], how="left")
+    onlyjudged = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
     onlyjudged = onlyjudged[~onlyjudged["rel"].isnull()]
-    onlyjudged = onlyjudged[["query","q0","docid","rank","score","system"]]
+    onlyjudged = onlyjudged[["query", "q0", "docid", "rank", "score", "system"]]
     d = TrecRun()
     d.run_data = onlyjudged
     onlyjudged = normalize_run(d, depth).run_data
