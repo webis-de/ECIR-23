@@ -9,7 +9,7 @@ from fast_ndcg_implementation import MemorizedNdcg
 
 
 def __unjudged_documents(run, qrels):
-    ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
+    ret = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
     ret = ret[ret["rel"].isnull()]
     
     return set(list(ret["docid"].unique()))
@@ -30,7 +30,11 @@ def __single_bootstrap(representative_documents, unjudged_docs, rand):
 
 def __rels_for_topic(run, qrels):
     topic_id = run['query'].unique()
-    assert len(topic_id) == 1
+    if len(topic_id) > 1:
+        raise ValueError('Ambigious topics')
+    elif len(topic_id) == 0:
+        return []
+
     topic_id = topic_id[0]
     unjudged = __unjudged_documents(run, qrels)
     qrels = __available_qrels_for_topic(run, qrels[qrels['query'] == topic_id])
@@ -115,7 +119,7 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
         doc_to_qrel = {}
         for _, i in qrels[qrels['query'] == topic].iterrows():
             if i['docid'] in doc_to_qrel:
-                raise ValueError('I do not know how to handle duplicates in qrels')
+                raise ValueError(f'I do not know how to handle duplicates in qrels: docid={i["docid"]} topic={topic}')
 
             doc_to_qrel[i['docid']] = i['rel']
 

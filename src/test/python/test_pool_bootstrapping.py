@@ -602,6 +602,44 @@ def test_bootstrap_with_some_relevant_and_some_irrelevant_with_normalize_output(
     assert expected == actual
 
 
+def test_bootstrap_with_some_relevant_and_some_irrelevant_with_normalize_output_and_missing_topic():
+    run = TrecRun()
+    run.run_data = pd.DataFrame([
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-1', 'rank': 0, 'score': 3000, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-2', 'rank': 1, 'score': 2999, 'system': 'a'},
+        {'query': '301', 'q0': 'Q0', 'docid': 'doc-3', 'rank': 2, 'score': 2998, 'system': 'a'},
+    ])
+
+    qrels = TrecQrel()
+    qrels.qrels_data = pd.DataFrame([
+        {'query': '301', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-2', 'rel': 0},
+        {'query': '301', 'q0': 0, 'docid': 'doc-4', 'rel': 1},
+        {'query': '301', 'q0': 0, 'docid': 'doc-5', 'rel': 0},
+
+        {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 0},
+        {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        {'query': '302', 'q0': 0, 'docid': 'doc-4', 'rel': 1},
+        {'query': '302', 'q0': 0, 'docid': 'doc-5', 'rel': 0},
+    ])
+
+    expected = [
+        {'run_file': 'a', 'query': '301',
+         'ndcg@10': [0.9197207891481876, 0.9197207891481876, 0.6131471927654584,
+                     0.9197207891481876, 0.6131471927654584]
+         },
+        {'run_file': 'a', 'query': '302',
+         'ndcg@10': [0.0, 0.0, 0.0, 0.0, 0.0]
+         }
+    ]
+    actual = list(normalize_eval_output(evaluate_bootstrap(run, qrels, 'ndcg@10', repeat=5, seed=1), 'a'))
+
+    print(actual)
+    print(expected)
+
+    assert expected == actual
+
+
 def test_dasa():
     for i in range(1):
         from run_file_processing import IncompletePools
@@ -609,7 +647,7 @@ def test_dasa():
         run = TrecRun('src/test/resources/sample-robust-04-run-for-topic-306.txt')
         qrels = TrecQrel('src/test/resources/sample-robust-04-qrels-for-topic-306.txt')
         pooling = IncompletePools(pool_per_run_file='src/main/resources/processed/pool-documents-per-run-trec-system-runs-trec13-robust.json.gz')
-        pool = {k:v for k,v in pooling.create_incomplete_pools_for_run('src/main/resources/processed/normalized-runs/trec-system-runs/trec13/robust/input.pircRB04td2.gz')}['depth-10-pool-incomplete-for-pirc']
+        pool = {k: v for k, v in pooling.create_incomplete_pools_for_run('src/main/resources/processed/normalized-runs/trec-system-runs/trec13/robust/input.pircRB04td2.gz')}['depth-10-pool-incomplete-for-pirc']
     
         expected = [{'run_file': 'a', 'query': '306', 'ndcg@10': [0.3822360008387524, 0.3159817773843634, 0.3159817773843634, 0.42602766053340346, 0.42602766053340346, 0.3159817773843634, 0.3159817773843634, 0.4922818839877925, 0.3822360008387524, 0.42602766053340346, 0.3822360008387524, 0.3159817773843634, 0.3822360008387524, 0.3822360008387524, 0.3159817773843634, 0.3822360008387524, 0.3822360008387524, 0.3822360008387524, 0.4922818839877925, 0.3822360008387524, 0.3822360008387524, 0.3822360008387524, 0.42602766053340346, 0.4922818839877925, 0.3822360008387524]}]
     
