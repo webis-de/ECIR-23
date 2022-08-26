@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import json
 
 
 class MemorizedNdcg:
@@ -128,11 +129,17 @@ class ImmediateNdcgResultPerQuery:
         self.__free_gains = free_gains
         self.query = query
 
-    def calculate(self, doc_rels):
+    def calculate(self, doc_rels_or_topic_str, qrels_for_topic=None):
+        if type(doc_rels_or_topic_str) == str:
+            return self.calculate({k: qrels_for_topic[v] for k, v in json.loads(doc_rels_or_topic_str).items()})
+        elif (doc_rels_or_topic_str and type(doc_rels_or_topic_str) != dict) or qrels_for_topic is not None:
+            raise ValueError('Invalid input')
+
+        doc_rels = doc_rels_or_topic_str
         dcg = self.__dcg_incomplete
 
         for unjudged_document in self.__free_gains:
             rel_of_doc = doc_rels[unjudged_document]
-            dcg += self.__free_gains[rel_of_doc]
+            dcg += self.__free_gains[unjudged_document][rel_of_doc]
 
         return dcg / self.__idcg

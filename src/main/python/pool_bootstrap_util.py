@@ -5,6 +5,7 @@ from copy import deepcopy
 from numpy import isnan
 from tqdm import tqdm
 from trectools import TrecQrel, TrecEval, TrecRun
+from fast_ndcg_implementation import MemorizedNdcg
 
 
 def __unjudged_documents(run, qrels):
@@ -133,21 +134,24 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
     depth = int(measure.split('@')[-1])
     run = normalize_run(run, depth)
     ret = {}
-    
+    memorized_ndg_scores = MemorizedNdcg(depth).get_ndcg(run, qrels, depth)
+
     for topic, substitute_pools in tqdm(create_substitute_pools(run, qrels, depth).items()):
         assert topic not in ret
+        incomplete_ndcg = memorized_ndg_scores[topic]
+        doc_to_qrel = {}
+        for _, i in qrels.qrels_data[qrels.qrels_data['query'] == topic].iterrows():
+            if i['docid'] in doc_to_qrel:
+                raise ValueError('I do not know how to handle duplicates in qrels')
+
+            doc_to_qrel[i['docid']] = i['rel']
+
         ret[topic] = {}
-        qrels_for_topic = __create_qrels_for_topic(qrels, topic)
-        run_for_topic = TrecRun()
-        run_for_topic.run_data = run.run_data[run.run_data['query'] == topic]
         
         for substitute_pool in substitute_pools:
             assert substitute_pool not in ret[topic]
-            if len(substitute_pools) > 100:
-                ret[topic][substitute_pool] = float('NaN')
-            else:
-                ret[topic][substitute_pool] = __extract_single_topic(TrecEval(__create_run_for_topic(run, topic, substitute_pool), qrels_for_topic).get_ndcg(depth, per_query=True, removeUnjudged=False), topic)
-            
+            ret[topic][substitute_pool] = incomplete_ndcg.calculate(substitute_pool, doc_to_qrel)
+
     return ret
 
 
