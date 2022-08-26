@@ -4,7 +4,7 @@ import json
 from copy import deepcopy
 from numpy import isnan
 from tqdm import tqdm
-from trectools import TrecQrel, TrecEval, TrecRun
+from trectools import TrecQrel, TrecRun
 from fast_ndcg_implementation import MemorizedNdcg
 
 
@@ -67,37 +67,6 @@ def __available_qrels_for_topic(run_for_topic, qrels_for_topic):
     return {k: qrels[k] for k in sorted(qrels.keys())}
 
 
-def __substitute_pools_for_topic(run_for_topic, qrels_for_topic):
-    unjudged = sorted(__unjudged_documents(run_for_topic, qrels_for_topic))
-    qrels = __available_qrels_for_topic(run_for_topic, qrels_for_topic)
-
-    if unjudged is None or len(unjudged) == 0:
-        return ['{}']
-
-    if sum([len(v) for v in qrels.values()]) < len(unjudged):
-        raise ValueError('too few judged documents in pool. Expected ' + str(len(unjudged)) + ' but have only ' + str(sum([len(v) for v in qrels.values()])) + '.')
-
-    ret = []
-    for unjudged_doc in unjudged:
-        tmp_ret = []
-        previous_lists = [{}]
-        if len(ret) > 0:
-            previous_lists = deepcopy(ret)
-        for _, qrel in qrels.items():
-            for prev in previous_lists:
-                prev = deepcopy(prev)
-                already_used = prev.values()
-                available = [i for i in qrel if i not in already_used]
-                if len(available) == 0:
-                    continue
-                prev[unjudged_doc] = available[0]
-                
-                tmp_ret += [prev]
-        ret = tmp_ret
-    
-    return sorted([json.dumps(i, sort_keys=True) for i in ret])
-
-
 def __create_qrels_for_topic(qrels, topic):
     ret = TrecQrel()
     ret.qrels_data = qrels.qrels_data[qrels.qrels_data['query'] == topic].copy()
@@ -136,21 +105,23 @@ def substitate_pools_with_effectivenes_scores(run, qrels, measure):
     ret = {}
     memorized_ndg_scores = MemorizedNdcg(depth).get_ndcg(run, qrels, depth)
 
-    for topic, substitute_pools in tqdm(create_substitute_pools(run, qrels, depth).items()):
+    if type(qrels) == TrecQrel:
+        qrels = qrels.qrels_data
+
+    for topic in qrels['query'].unique():
         assert topic not in ret
         incomplete_ndcg = memorized_ndg_scores[topic]
+
         doc_to_qrel = {}
-        for _, i in qrels.qrels_data[qrels.qrels_data['query'] == topic].iterrows():
+        for _, i in qrels[qrels['query'] == topic].iterrows():
             if i['docid'] in doc_to_qrel:
                 raise ValueError('I do not know how to handle duplicates in qrels')
 
             doc_to_qrel[i['docid']] = i['rel']
 
-        ret[topic] = {}
-        
-        for substitute_pool in substitute_pools:
-            assert substitute_pool not in ret[topic]
-            ret[topic][substitute_pool] = incomplete_ndcg.calculate(substitute_pool, doc_to_qrel)
+        incomplete_ndcg.set_doc_to_qrel(doc_to_qrel)
+
+        ret[topic] = incomplete_ndcg
 
     return ret
 
@@ -169,18 +140,6 @@ def __extract_single_topic(df, topic):
     return 0 if isnan(ret) else ret
 
 
-def create_substitute_pools(run, qrels, depth):
-    ret = {}
-    run = normalize_run(run, depth)
-    
-    for topic in qrels.qrels_data['query'].unique():
-        qrels_for_topic = qrels.qrels_data[qrels.qrels_data['query'] == topic]
-        run_for_topic = run.run_data[run.run_data['query'] == topic]
-        ret[topic] = __substitute_pools_for_topic(run_for_topic, qrels_for_topic)
-    
-    return ret
-
-
 def evaluate_bootstrap(run, qrels, measure, repeat=5, seed=1):
     print('Prepare substitute pools for bootstrapping')
     substitute_pools = substitate_pools_with_effectivenes_scores(run, qrels, measure)
@@ -194,8 +153,6 @@ def evaluate_bootstrap(run, qrels, measure, repeat=5, seed=1):
         ret[topic] = {measure: []}
         run_for_topic = run.run_data[run.run_data['query'] == topic]
         for bootstrap in __bootstraps_for_topic(run_for_topic, qrels.qrels_data, seed=seed, repeat=repeat):
-            if bootstrap not in substitute_pools[topic]:
-                raise ValueError(f'Can not find \'{bootstrap}\' for topic {topic}.')
             ret[topic][measure] += [substitute_pools[topic][bootstrap]]
 
     return ret

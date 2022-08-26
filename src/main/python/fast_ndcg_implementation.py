@@ -128,12 +128,20 @@ class ImmediateNdcgResultPerQuery:
         self.__dcg_incomplete = dcg_incomplete
         self.__free_gains = free_gains
         self.query = query
+        self.__qrels_for_topic = None
+
+    def set_doc_to_qrel(self, qrels_for_topic):
+        if self.__qrels_for_topic:
+            raise ValueError('Can not be reused')
+
+        self.__qrels_for_topic = qrels_for_topic
 
     def calculate(self, doc_rels_or_topic_str, qrels_for_topic=None):
         if type(doc_rels_or_topic_str) == str:
             return self.calculate({k: qrels_for_topic[v] for k, v in json.loads(doc_rels_or_topic_str).items()})
         elif (doc_rels_or_topic_str and type(doc_rels_or_topic_str) != dict) or qrels_for_topic is not None:
-            raise ValueError('Invalid input')
+            raise ValueError(f'Invalid input type(doc_rels_or_topic_str)={type(doc_rels_or_topic_str)} ' +
+                             f'and qrels_for_topic = {qrels_for_topic}')
 
         doc_rels = doc_rels_or_topic_str
         dcg = self.__dcg_incomplete
@@ -143,3 +151,6 @@ class ImmediateNdcgResultPerQuery:
             dcg += self.__free_gains[unjudged_document][rel_of_doc]
 
         return dcg / self.__idcg
+
+    def __getitem__(self, i):
+        return self.calculate(i, self.__qrels_for_topic)
