@@ -35,7 +35,7 @@ def __parse_args():
 
 def task_already_executed(task):
     if type(task) == list:
-        return task_already_executed(task[0])
+        return all(task_already_executed(i) for i in task)
     
     out_file = task['working_directory'] + '/' + task['out_file_name']
     return exists(out_file)
