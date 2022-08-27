@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import json
+from trectools import TrecRun
 
 
 class MemorizedNdcg:
@@ -66,12 +67,15 @@ class MemorizedNdcg:
         return tmp_ret
 
     def __run_for_query(self, run, query, qrels_for_query):
-        try:
-            ret = run.run_data[run.run_data['query'] == query]
-        except:
-            ret = pd.DataFrame(columns=["query", "q0", "docid", "rank", "score", "system"])
+        if type(run) == TrecRun:
+            return self.__run_for_query(run.run_data, query, qrels_for_query)
+        if 'query' not in run.columns:
+            return self.__run_for_query(
+                pd.DataFrame(columns=["query", "q0", "docid", "rank", "score", "system"]),
+                query, qrels_for_query
+            )
 
-        return self.__ranking_with_labels(ret, qrels_for_query)
+        return self.__ranking_with_labels(run[run['query'] == query], qrels_for_query)
 
     def __sum_dcg_(self, run_with_rel):
         free_gains = {}
