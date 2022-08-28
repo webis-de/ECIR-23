@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=ecir23-unjudged-documents
-#SBATCH --output=res.txt
+#SBATCH --output=./logs/output.%a.out
 #
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=5g
