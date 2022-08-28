@@ -11,13 +11,16 @@ from fast_ndcg_implementation import MemorizedNdcg
 
 class BootstrappingStrategey:
     def __init__(self, qrels=None):
-        self.__qrels = qrels.qrels_data.copy()[["query", "docid", "rel"]]
+        if type(qrels) == TrecQrel:
+            self.qrels = qrels.qrels_data.copy()[["query", "docid", "rel"]]
+        else:
+            self.qrels = qrels.copy()[["query", "docid", "rel"]]
 
     def single_bootstrap(self, qrels_and_run, unjudged_docs, rand):
         raise ValueError('Implement this method in implementations')
 
     def unjudged_documents(self, run):
-        ret = pd.merge(run, self.__qrels, how="left")
+        ret = pd.merge(run, self.qrels, how="left")
         ret = ret[ret["rel"].isnull()]
 
         return sorted(list(set(list(ret["docid"].unique()))))
@@ -28,7 +31,7 @@ class BootstrappingStrategey:
             raise ValueError('sdada')
         qid = qid[0]
 
-        ret = pd.merge(self.__qrels, run[["query", "docid", "rank"]], how="left")
+        ret = pd.merge(self.qrels, run[["query", "docid", "rank"]], how="left")
 
         return ret[ret['query'] == qid]
 
