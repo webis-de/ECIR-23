@@ -118,13 +118,6 @@ def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
     return list(normalize_eval_output(ret, run_file_name))
 
 
-def __unjudged_documents(run, qrels):
-    ret = pd.merge(run, qrels[["query","docid","rel"]], how="left")
-    ret = ret[ret["rel"].isnull()]
-    
-    return set(list(ret["docid"].unique()))
-
-
 def __docs_for_max_residual_trec_eval(run_for_topic, qrels_for_topic, min_score):
     pools = PoolAndRunIndependentBootstrappingStrategey(qrels_for_topic)\
         .available_qrels_for_topic(run_for_topic, run_for_topic.iloc[0]['query'])

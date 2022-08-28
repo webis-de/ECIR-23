@@ -97,7 +97,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], [1.0, 1.0, 0, 0])
         
-        self.assertEquals(expected, str(model))
+        self.assertEquals(expected, model.parameters())
 
     def test_fitting_for_all_perfect_values_case_04(self):
         expected = json.dumps({"model": "ParametrizedBootstrappingModel", "rmse": 0.7071067811865476,
