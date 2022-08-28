@@ -6,12 +6,9 @@ import os
 import sys
 import json
 from pathlib import Path
-import gzip
-
 if 'src/main/python/' not in sys.path:
     sys.path.append('src/main/python/')
-
-from run_file_processing import IncompletePools, load_all_runs, normalize_run
+from run_file_processing import IncompletePools
 from evaluation_util import evaluate_on_pools, evaluate_on_original_pool_only
 
 
@@ -23,12 +20,14 @@ def __parse_args():
     parser = argparse.ArgumentParser(description='Evaluate runs.')
 
     parser.add_argument('--taskNumber', type=int, required=True,
-                        help='In case the task is read from a file (and is not specified via arguments), only the task with the number will be specified.')
+                        help='In case the task is read from a file (and is not specified via arguments),' +
+                             'only the task with the number will be specified.')
 
     parser.add_argument('--taskDefinititionFile', type=str, required=True,
                         help='A file in jsonl format that specified the tasks to execute')
 
-    parser.add_argument('--methodToExecute', type=str, required=True, choices=['run_task', 'run_task_on_qrels'])
+    parser.add_argument('--methodToExecute', type=str, required=False, default=None,
+                        choices=['run_task', 'run_task_on_qrels'])
 
     return parser.parse_args()
 
@@ -78,12 +77,11 @@ if __name__ == '__main__':
     
     task = tasks[args.taskNumber]
 
-    method_to_execute = locals()[args.methodToExecute]
-
     if not task_already_executed(task):
         if type(task) == list:
             for t in task:
+                method_to_execute = locals()[t['task_to_execute']]
                 method_to_execute(t)
         else:
+            method_to_execute = locals()[task['task_to_execute']]
             method_to_execute(task)
-

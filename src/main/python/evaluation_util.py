@@ -164,7 +164,6 @@ def __create_residual_trec_eval(run, qrels, depth, residual_type, adjust_idcg):
         
         remaining_positive_docs = __docs_for_max_residual_trec_eval(run_for_topic, qrels_for_topic, min_score)
 
-
         for _, i in run_for_topic.iterrows():
             i = deepcopy(dict(i))
             if i['docid'] in unjudged_documents and len(remaining_positive_docs) == 0 and adjust_idcg:
@@ -182,6 +181,7 @@ def __create_residual_trec_eval(run, qrels, depth, residual_type, adjust_idcg):
     run.run_data = pd.DataFrame(new_run)
 
     return TrecEval(run, qrels)
+
 
 def normalize_eval_output(df, run_file_name):
     if type(df) is dict:
