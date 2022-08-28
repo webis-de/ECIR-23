@@ -127,10 +127,10 @@ class TestProbabilityEstimation(TestCase):
 
         estimator = RunIndependentCountProbabilityEstimator()
         actual = estimator.estimate_probabilities(run, qrels)
-        self.assertAlmostEqual(0.66653, actual[0], places=4)
-        self.assertAlmostEqual(0.33326, actual[1], places=4)
-        self.assertAlmostEqual(0.0001, actual[2], places=4)
-        self.assertAlmostEqual(0.0001, actual[3], places=4)
+        self.assertAlmostEqual(1.0, actual[0], places=4)
+        self.assertAlmostEqual(0.0, actual[1], places=4)
+        self.assertAlmostEqual(0.0, actual[2], places=4)
+        self.assertAlmostEqual(0.0, actual[3], places=4)
 
 
 # Add tests for an approach that uses simply the condensed thing as predictions

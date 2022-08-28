@@ -88,12 +88,12 @@ if __name__ == '__main__':
                 try:
                     method_to_execute(t)
                 except Exception as e:
-                    print(f'Got exception during task {t}')
+                    print(f'Got error/exception during task {t}')
                     raise e
         else:
             method_to_execute = locals()[task['task_to_execute']]
             try:
                 method_to_execute(task)
             except Exception as e:
-                print(f'Got exception during task {task}')
+                print(f'Got error/exception during task {task}')
                 raise e

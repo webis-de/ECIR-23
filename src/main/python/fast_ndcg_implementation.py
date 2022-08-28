@@ -107,15 +107,19 @@ class MemorizedNdcg:
         selection = pd.merge(top_x, relevant_docs[["query", "docid", "rel"]], how="left")
 
         if len(selection['query'].unique()) > 1:
-            raise ValueError('I expect exactly one query')
+            raise ValueError(f'I expect exactly one query. Got {selection["query"].unique()}')
 
         return selection
 
     def __perfect_ranking(self, qrels_df):
         relevant_docs = qrels_df[qrels_df.rel > 0]
 
+        if len(relevant_docs['query'].unique()) == 0:
+            # If there are no relevant documents, we still assume there is one to give systems an nDCG of 0
+            return pd.DataFrame([{'rank': 1, 'rel': 1}])
+
         if len(relevant_docs['query'].unique()) != 1:
-            raise ValueError('I expect the qrels per query!')
+            raise ValueError(f'I expect the qrels per query! Got {relevant_docs["query"].unique()}')
 
         ret = relevant_docs.sort_values(["query", "rel"], ascending=[True, False]).reset_index(drop=True)
         ret = ret.groupby("query").head(self.__depth)

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from trectools import TrecEval, TrecRun, TrecQrel
+from trectools import TrecEval
 
 from fast_ndcg_implementation import MemorizedNdcg
 
@@ -17,6 +17,12 @@ QRELS_MANY_RELEVANTS_FEW_IRRELEVANT = create_qrels([
         ql('r-1', 1), ql('r-2', 1), ql('r-3', 1), ql('r-4', 1),
         ql('r-5', 1), ql('r-6', 1), ql('r-7', 1), ql('r-8', 1),
 
+        ql('nr-1', 0), ql('nr-2', 0), ql('nr-3', 0), ql('nr-4', 0),
+        ql('nr-5', 0), ql('nr-6', 0), ql('nr-7', 0), ql('nr-8', 0),
+        ql('nr-9', 0), ql('nr-10', 0)
+    ])
+
+QRELS_ONLY_IRRELEVANT = create_qrels([
         ql('nr-1', 0), ql('nr-2', 0), ql('nr-3', 0), ql('nr-4', 0),
         ql('nr-5', 0), ql('nr-6', 0), ql('nr-7', 0), ql('nr-8', 0),
         ql('nr-9', 0), ql('nr-10', 0)
@@ -154,6 +160,18 @@ class TestFastNdcgImplementation(TestCase):
 
         self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, True), 4)
         self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, False), 4)
+
+    def test_ranking_without_any_relevant_docs_ranking_many_relevant_few_irrelant(self):
+        run = create_run([
+            rl('nr-1', 1), rl('nr-2', 2), rl('nr-3', 3), rl('nr-4', 4), rl('nr-5', 5),
+            rl('nr-6', 6), rl('nr-7', 7), rl('nr-8', 8), rl('nr-9', 9), rl('nr-10', 10),
+        ])
+
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, True), 4)
+        # self.assertAlmostEqual(0.0, trectools_ndcg_eval(run, QRELS_MANY_RELEVANTS_FEW_IRRELEVANT, False), 4)
+
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_ONLY_IRRELEVANT, True), 4)
+        self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_ONLY_IRRELEVANT, False), 4)
 
     def test_permutation_test(self):
         raise ValueError('ToDo Implement')
