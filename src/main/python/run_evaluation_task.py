@@ -81,7 +81,15 @@ if __name__ == '__main__':
         if type(task) == list:
             for t in task:
                 method_to_execute = locals()[t['task_to_execute']]
-                method_to_execute(t)
+                try:
+                    method_to_execute(t)
+                except Exception as e:
+                    print(f'Got exception during task {t}')
+                    raise e
         else:
             method_to_execute = locals()[task['task_to_execute']]
-            method_to_execute(task)
+            try:
+                method_to_execute(task)
+            except Exception as e:
+                print(f'Got exception during task {task}')
+                raise e
