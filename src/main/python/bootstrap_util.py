@@ -80,7 +80,7 @@ class BootstrappEval:
         ret = {}
         topics = sorted(qrels.qrels_data['query'].unique())
         if self.__verbose:
-            topics = tqdm(self.__verbose, desc="Bootstrapping")
+            topics = tqdm(topics, desc="Bootstrapping")
 
         for topic in topics:
             assert topic not in ret
