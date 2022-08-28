@@ -1,5 +1,6 @@
 from scipy.stats import poisson
 import pandas as pd
+from trectools import TrecQrel, TrecRun
 from run_file_processing import IncompletePools
 
 
@@ -18,7 +19,12 @@ def load_pool_task(task):
 
 class ProbabilityEstimator:
     def estimate_probabilities(self, run, qrels):
-        tmp = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
+        if type(run) == TrecRun:
+            return self.estimate_probabilities(run.run_data, qrels)
+        if type(qrels) == TrecQrel:
+            return self.estimate_probabilities(run, qrels.qrels_data)
+
+        tmp = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
         tmp = tmp[tmp["rel"].isnull()]
 
         ret = [0, 0, 0, 0]
@@ -41,7 +47,7 @@ class ProbabilityEstimator:
 
 class CountProbabilityEstimator(ProbabilityEstimator):
     def estimate_single_probability(self, run, qrels, relevance_level, k=None):
-        ret = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
+        ret = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
         ret = ret[~ret["rel"].isnull()]
 
         return max(len(ret[ret["rel"] == relevance_level])/len(ret), super().smoothing())
@@ -49,8 +55,6 @@ class CountProbabilityEstimator(ProbabilityEstimator):
 
 class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
     def estimate_single_probability(self, run, qrels, relevance_level, k=None):
-        qrels = qrels.qrels_data
-
         return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), super().smoothing())
 
 
@@ -62,14 +66,19 @@ class PoissonEstimator(CountProbabilityEstimator):
         self.__upper_p = upper_p
 
     def estimate_probabilities(self, run, qrels):
-        ret = pd.merge(run.run_data, qrels.qrels_data[["query", "docid", "rel"]], how="left")
+        if type(run) == TrecRun:
+            return self.estimate_probabilities(run.run_data, qrels)
+        if type(qrels) == TrecQrel:
+            return self.estimate_probabilities(run, qrels.qrels_data)
+
+        ret = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
 
         num_judged = len(ret[~ret["rel"].isnull()])
         num_relevant = len(ret[ret["rel"] == 1])
         p_relevant = num_relevant/num_judged
         p_unjudged = (len(ret) - num_judged)/len(ret)
 
-        p_relevant_from_pool = len(qrels.qrels_data[qrels.qrels_data['rel'] == 1])/len(qrels.qrels_data)
+        p_relevant_from_pool = len(qrels[qrels['rel'] == 1])/len(qrels)
 
         p_add_from_pool_given_unjudged = poisson.pmf(k=num_relevant + self.__to_add, mu=p_relevant_from_pool)
 

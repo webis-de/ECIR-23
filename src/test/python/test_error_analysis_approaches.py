@@ -1,5 +1,4 @@
 from unittest import TestCase
-from approvaltests import verify
 from trectools import TrecEval
 from error_analysis_approaches import *
 from probability_estimation import *
@@ -24,7 +23,12 @@ def eval_probability_estimates(approach):
         ('bad_run_unjudged_pos_5_difficult_topic', bad_run_unjudged_pos_5_difficult_topic()),
     ]
 
-    return {k: __norm(approach.estimate_probabilities(v['run'], v['qrels'])) for k, v in appr}
+    ret = {k: __norm(approach.estimate_probabilities(v['run'], v['qrels'])) for k, v in appr}
+    ret2 = {k: __norm(approach.estimate_probabilities(v['run'].run_data, v['qrels'].qrels_data)) for k, v in appr}
+
+    assert ret == ret2
+
+    return ret
 
 
 class TestErrorAnalysisApproaches(TestCase):
@@ -59,8 +63,6 @@ class TestErrorAnalysisApproaches(TestCase):
             'good_run_unjudged_pos_5_difficult_topic': {0: 0.692, 1: 0.308, 2: 0.0, 3: 0.0},
             'bad_run_unjudged_pos_5_difficult_topic': {0: 0.692, 1: 0.308, 2: 0.0, 3: 0.0}
         }
-
-
 
         actual = eval_probability_estimates(estimator)
 
@@ -111,4 +113,3 @@ class TestErrorAnalysisApproaches(TestCase):
 
         print(actual)
         self.assertEquals(expected, actual)
-
