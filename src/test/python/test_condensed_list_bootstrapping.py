@@ -34,7 +34,8 @@ class TestCondensedListBootstrapping(TestCase):
 
         try:
             create_substitute_pools_for_condensed_lists(run, qrels, 10)
-        except:
+        except ValueError as e:
+            print(e)
             return
 
         assert False
@@ -63,7 +64,8 @@ class TestCondensedListBootstrapping(TestCase):
             json.dumps({'doc-juru-01': 'doc-wdo-01', 'shared-doc-01': 'doc-wdo-02'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'doc-wdo-01'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'doc-wdo-01', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
-            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
+            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'},
+                       sort_keys=True),
         ]), '302': ['{}']}
         actual = create_substitute_pools_for_condensed_lists(run, qrels, 10)
         print(json.dumps(actual))
@@ -94,7 +96,8 @@ class TestCondensedListBootstrapping(TestCase):
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'a-0'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
-            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
+            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'},
+                       sort_keys=True),
         ]), '302': ['{}']}
         actual = create_substitute_pools_for_condensed_lists(run, qrels, 10)
         print(json.dumps(actual))
@@ -129,7 +132,8 @@ class TestCondensedListBootstrapping(TestCase):
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'a-0'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
-            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
+            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'},
+                       sort_keys=True),
         ]), '302': ['{}']}
         actual = create_substitute_pools_for_condensed_lists(run, qrels, 10)
         print(json.dumps(actual))
@@ -169,7 +173,8 @@ class TestCondensedListBootstrapping(TestCase):
         # Unjudged are: doc-juru-01, shared-doc-01
         expected = {'301': sorted([
 
-            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
+            json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'},
+                       sort_keys=True),
             json.dumps({'doc-juru-01': 'REMOVE-THIS-DOCUMENT', 'shared-doc-01': 'a-0'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'REMOVE-THIS-DOCUMENT'}, sort_keys=True),
             json.dumps({'doc-juru-01': 'a-0', 'shared-doc-01': 'b-0'}, sort_keys=True),
@@ -187,7 +192,7 @@ class TestCondensedListBootstrapping(TestCase):
 
         assert expected == actual
 
-    def test_substitate_pools_with_effectivenes_scores_for_single_unjudged_document_with_single_qrels_huge_pool_02(self):
+    def test_substitate_pools_with_effectivenes_scores_for_single_unjudged_document_with_single_qrels_huge_pool_2(self):
         run = TrecRun()
         run.run_data = pd.DataFrame([
             {'query': '301', 'q0': 'Q0', 'docid': 'doc-juru-01', 'rank': 0, 'score': 3000, 'system': 'a'},
@@ -206,8 +211,8 @@ class TestCondensedListBootstrapping(TestCase):
             {'query': '301', 'q0': 0, 'docid': 'doc-juru-01', 'rel': 1},
             {'query': '301', 'q0': 0, 'docid': 'shared-doc-01', 'rel': 1},
 
-             # Some noise
-             {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            # Some noise
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
             {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
