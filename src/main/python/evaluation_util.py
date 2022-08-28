@@ -1,9 +1,9 @@
 from trectools import TrecRun, TrecQrel, TrecEval
 import pandas as pd
 from run_file_processing import normalize_run
-import pool_bootstrap_util as pool_bs
 from copy import deepcopy
 from bootstrap_util import BootstrappEval, FullyIndependentBootstrappingStrategey
+from pool_bootstrap_util import PoolAndRunIndependentBootstrappingStrategey
 
 
 def evaluate_on_pools(run_file, qrel_file, pools, measure):
@@ -110,7 +110,8 @@ def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
         bs_eval = BootstrappEval(f'ndcg@{depth}', FullyIndependentBootstrappingStrategey(trec_eval.qrels))
         ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     elif measure.startswith('bs-p-1000-ndcg@10'):
-        ret = pool_bs.evaluate_bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
+        bs_eval = BootstrappEval(f'ndcg@{depth}', PoolAndRunIndependentBootstrappingStrategey(trec_eval.qrels))
+        ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     else:
         raise ValueError('Can not handle measure "' + measure +'".')
 
@@ -125,7 +126,8 @@ def __unjudged_documents(run, qrels):
 
 
 def __docs_for_max_residual_trec_eval(run_for_topic, qrels_for_topic, min_score):
-    pools = pool_bs.__available_qrels_for_topic(run_for_topic, qrels_for_topic)
+    pools = PoolAndRunIndependentBootstrappingStrategey(qrels_for_topic)\
+        .available_qrels_for_topic(run_for_topic, run_for_topic.iloc[0]['query'])
     ret = []
     last_score = 1000000
     
@@ -154,7 +156,8 @@ def __create_residual_trec_eval(run, qrels, depth, residual_type, adjust_idcg):
     
     for topic in run.topics():
         run_for_topic = run.run_data[run.run_data['query'] == topic]
-        unjudged_documents = set(pool_bs.__unjudged_documents(run_for_topic, qrels.qrels_data))
+        pool_bs = FullyIndependentBootstrappingStrategey(qrels.qrels_data)
+        unjudged_documents = set(pool_bs.unjudged_documents(run_for_topic))
         qrels_for_topic = qrels.qrels_data[qrels.qrels_data['query'] == topic]
         
         min_score = 1
