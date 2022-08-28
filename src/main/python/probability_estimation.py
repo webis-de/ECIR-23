@@ -27,6 +27,10 @@ class ProbabilityEstimator:
         tmp = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
         tmp = tmp[tmp["rel"].isnull()]
 
+        if len(tmp) == 0:
+            # Default
+            return {0: 0, 1: 0, 2: 0, 3: 0}
+
         ret = [0, 0, 0, 0]
         rel_levels = [0, 1, 2, 3]
 
@@ -77,6 +81,10 @@ class PoissonEstimator(CountProbabilityEstimator):
         num_relevant = len(ret[ret["rel"] == 1])
         p_relevant = num_relevant/num_judged
         p_unjudged = (len(ret) - num_judged)/len(ret)
+
+        if p_unjudged <= 0.0000000000001:
+            # Default
+            return {0: 0, 1: 0, 2: 0, 3: 0}
 
         p_relevant_from_pool = len(qrels[qrels['rel'] == 1])/len(qrels)
 
