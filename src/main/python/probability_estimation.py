@@ -31,6 +31,10 @@ class ProbabilityEstimator:
             # Default
             return {0: 0, 1: 0, 2: 0, 3: 0}
 
+        if len(tmp) == len(run):
+            # Default
+            return {0: 1, 1: 0, 2: 0, 3: 0}
+
         ret = [0, 0, 0, 0]
         rel_levels = [0, 1, 2, 3]
 
@@ -79,6 +83,11 @@ class PoissonEstimator(CountProbabilityEstimator):
 
         num_judged = len(ret[~ret["rel"].isnull()])
         num_relevant = len(ret[ret["rel"] == 1])
+
+        if num_judged <= 0.0000000000001:
+            # Default
+            return {0: 1, 1: 0, 2: 0, 3: 0}
+
         p_relevant = num_relevant/num_judged
         p_unjudged = (len(ret) - num_judged)/len(ret)
 

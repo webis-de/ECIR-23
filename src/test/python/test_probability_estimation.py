@@ -133,5 +133,4 @@ class TestProbabilityEstimation(TestCase):
         self.assertAlmostEqual(0.0001, actual[3], places=4)
 
 
-
 # Add tests for an approach that uses simply the condensed thing as predictions

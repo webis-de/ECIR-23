@@ -150,3 +150,42 @@ class TestErrorAnalysisApproaches(TestCase):
 
             print(actual)
             self.assertEquals(expected, actual)
+
+    def test_probability_is_zero_for_fully_unjudged_rankings(self):
+        estimators = [PoissonEstimator(0, 0, 0.025, 0.075), PoissonEstimator(0), PoissonEstimator(),
+                      RunIndependentCountProbabilityEstimator(), CountProbabilityEstimator()]
+
+        run = create_run([
+            rl('unj-1', 1),
+            rl('unj-2', 2),
+            rl('unj-3', 3),
+            rl('unj-5', 4),
+        ])
+
+        qrels = create_qrels([
+            ql('r-1', 1),
+            ql('r-2', 1),
+            ql('r-3', 1),
+            ql('r-4', 1),
+            ql('r-5', 1),
+            ql('r-6', 1),
+            ql('r-7', 1),
+            ql('r-8', 1),
+
+            ql('nr-1', 0),
+            ql('nr-2', 0),
+            ql('nr-3', 0),
+        ])
+
+        approaches = (
+            ('fully_judged_topic', {'run': run, 'qrels': qrels}),
+        )
+        expected = {
+            'fully_judged_topic': {0: 1.0, 1: 0.0, 2: 0, 3: 0}
+        }
+
+        for estimator in estimators:
+            actual = eval_probability_estimates(estimator, approaches)
+
+            print(actual)
+            self.assertEquals(expected, actual)
