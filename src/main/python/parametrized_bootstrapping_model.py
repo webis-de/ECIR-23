@@ -100,8 +100,9 @@ class ParametrizedBootstrappingModel():
 
             if len(optimal_solutions) == 2:
                 return optimal_solutions[0]
-                
-            return median(optimal_solutions)
+
+            ret = median(optimal_solutions)
+            return max([i for i in optimal_solutions if i <= ret])
             
         raise ValueError('can not handle ' + self.__optimize_for)
 
