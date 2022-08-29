@@ -89,7 +89,9 @@ class ParametrizedBootstrappingModel():
         if self.__optimize_for == 'rmse':
             if len(optimal_solutions) == 2:
                 return optimal_solutions[0]
-            return median(optimal_solutions)
+
+            ret = median(optimal_solutions)
+            return max([i for i in optimal_solutions if i <= ret])
         elif self.__optimize_for.startswith('rmse['):
             lower_bound_weight, upper_bound_weight = self.__optimize_for.split('[')[1].split(']')[0].split(',')
             
