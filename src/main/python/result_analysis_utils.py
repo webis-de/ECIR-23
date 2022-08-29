@@ -137,7 +137,15 @@ def __rename_pooling(pool):
 
 
 def __rename_measure(m):
-    to_rename = {i.lower():i.lower() for i in ['rmse', 'bs-1000-ndcg@10-mean', 'bs-1000-ndcg@10-q-01', 'bs-1000-ndcg@10-q-10', 'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25', 'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10']}
+    identical_measures = [
+        'rmse', 'bs-1000-ndcg@10-mean', 'bs-1000-ndcg@10-q-01', 'bs-1000-ndcg@10-q-10',
+        'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25',
+        'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10', 
+        'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-pool-dependent-1000-ndcg@10-ndcg@10',
+        'bs-run-dependent-1000-ndcg@10-ndcg@10'
+    ]
+    
+    to_rename = {i.lower():i.lower() for i in identical_measures}
     to_rename.update({
         'unjudged@10-UNJ@10': 'unjudged@10',
         'condensed-ndcg@10-NDCG@10': 'condensed-ndcg@10',
@@ -193,7 +201,7 @@ def __process_row(df_row):
         ret[k] = v
     
     if len(ret) == 0:
-        raise ValueError('This can not happen')
+        raise ValueError('This can not happen. Worked on ' + json.dumps(df_row))
     
     return ret
 
