@@ -12,6 +12,51 @@ from run_file_processing import IncompletePools
 from evaluation_util import evaluate_on_pools, evaluate_on_original_pool_only
 
 
+SHARED_TASKS = {
+    'trec-system-runs/trec13/robust': {
+        'seed_url': 'https://trec.nist.gov/results/trec13/robust.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
+    },
+
+    # Got the query reformulation runs thankfully from Timo Breuer
+    'uqv-runs-ecir21-paper': {
+        'seed_url': 'https://th-koeln.sciebo.de/s/PJm1l9JnoeHvkB7',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.core17.txt'
+    },
+
+
+    'trec-system-runs/trec18/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec18/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.1-50.txt'
+    },
+
+    'trec-system-runs/trec19/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec19/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.51-100.txt'
+    },
+
+    'trec-system-runs/trec20/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec20/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.101-150.txt'
+    },
+
+    'trec-system-runs/trec21/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec21/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.151-200.txt'
+    },
+
+    'trec-system-runs/trec22/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec22/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.201-250.txt'
+    },
+
+    'trec-system-runs/trec23/web.adhoc': {
+        'seed_url': 'https://trec.nist.gov/results/trec23/web.adhoc.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.251-300.txt'
+    }
+}
+
+
 def normalize_identifier(identifier):
     return identifier.replace('/', '-')
 
@@ -45,7 +90,7 @@ def run_task(task):
     
     subprocess.check_output(['mkdir', '-p', os.path.abspath(str(Path(task['working_directory'] + '/' + task['out_file_name'])/ '..'))])
     
-    qrel_file = 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
+    qrel_file = SHARED_TASKS[task['trec_identifier']]['qrels']
     pooling = IncompletePools(pool_per_run_file=task['working_directory'] + '/processed/pool-documents-per-run-' + normalize_identifier(task['trec_identifier']) + '.json.gz')
     pools = {k: v for k, v in pooling.create_incomplete_pools_for_run(task['run'])}
 
@@ -66,8 +111,7 @@ def run_task_on_qrels(task):
     subprocess.check_output(
         ['mkdir', '-p', os.path.abspath(str(Path(task['working_directory'] + '/' + task['out_file_name']) / '..'))])
 
-    qrel_file = 'src/main/resources/unprocessed/topics-and-qrels/qrels.core17.txt'
-
+    qrel_file = SHARED_TASKS[task['trec_identifier']]['qrels']
     eval_result = evaluate_on_original_pool_only(task['run'], qrel_file, task['measure'])
     eval_result['task'] = task
 
