@@ -189,8 +189,9 @@ def ql(doc_id, rel):
     return {'query': '1', 'q0': 0, 'docid': doc_id, 'rel': rel}
 
 
-def rl(doc_id, pos):
-    return {'query': '1', 'q0': 'Q0', 'docid': doc_id, 'rank': pos, 'score': 3000-pos, 'system': 'a'}
+def rl(doc_id, pos, score=None):
+    score = 3000-pos if not score else score
+    return {'query': '1', 'q0': 'Q0', 'docid': doc_id, 'rank': pos, 'score': score, 'system': 'a'}
 
 
 def as_latex(data):

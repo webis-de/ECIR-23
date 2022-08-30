@@ -1,6 +1,7 @@
 import json
-from trectools import TrecQrel
+from trectools import TrecQrel, TrecRun
 import pandas as pd
+from run_file_processing import normalize_run
 
 
 class CanonicalGroupDeduplicationDeduplication:
@@ -23,8 +24,8 @@ class CanonicalGroupDeduplicationDeduplication:
             ids = sorted([i['id'] for i in line['ids']])
             canonical_id = ids[0]
 
-            for id in ids:
-                yield (id, canonical_id)
+            for doc_id in ids:
+                yield (doc_id, canonical_id)
 
     def document_id_to_canonical_id(self, doc_id):
         ret = self.__translation_map.get(doc_id, doc_id)
@@ -63,6 +64,38 @@ class QrelDeduplication(CanonicalGroupDeduplicationDeduplication):
 
 
 class ClueWebQrelDeduplication(QrelDeduplication):
+    def __init__(self):
+        super().__init__(['src/main/resources/unprocessed/clueweb12-fingerprint-groups-canonical.jsonl',
+                          'src/main/resources/unprocessed/clueweb09-fingerprint-groups-canonical.jsonl'])
+
+
+class RunDeduplication(CanonicalGroupDeduplicationDeduplication):
+    def deduplicated(self, run):
+        ret_df = []
+        run = normalize_run(run, depth=1000)
+        qid_to_covered_doc_ids = {}
+
+        for _, i in run.run_data.iterrows():
+            if i['query'] not in qid_to_covered_doc_ids:
+                qid_to_covered_doc_ids[i['query']] = set()
+
+            doc_id = self.document_id_to_canonical_id(i['docid'])
+
+            if doc_id in qid_to_covered_doc_ids[i['query']]:
+                continue
+
+            qid_to_covered_doc_ids[i['query']].add(doc_id)
+            ret_df += [{'query': i['query'], 'q0': 'Q0', 'docid': doc_id,
+                        'rank': len(qid_to_covered_doc_ids[i['query']]), 'score': i['score'], 'system': i['system']
+                        }]
+
+        ret = TrecRun
+        ret.run_data = pd.DataFrame(ret_df)
+
+        return ret
+
+
+class ClueWebRunDeduplication(RunDeduplication):
     def __init__(self):
         super().__init__(['src/main/resources/unprocessed/clueweb12-fingerprint-groups-canonical.jsonl',
                           'src/main/resources/unprocessed/clueweb09-fingerprint-groups-canonical.jsonl'])
