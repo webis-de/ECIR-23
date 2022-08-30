@@ -2,11 +2,11 @@
 import argparse
 import subprocess
 from os.path import exists
-import os
 import sys
 import json
 from pathlib import Path
 import gzip
+from deduplication_util import ClueWebRunDeduplication
 from numpy import array_split
 
 
@@ -59,7 +59,8 @@ def __rsync_from_backup_if_possible(trec_identifier, working_directory):
     subprocess.check_output(['rsync', '-ar', source_dir, str(Path(working_directory + '/' + trec_identifier) / '..')])
 
 
-def __download_runs(target_directory, seed_url, trec_user, trec_password):
+def __download_runs(target_directory, seed_url_for_runs, trec_user, trec_password):
+    print(f'Download using {target_directory}, {seed_url_for_runs}, {trec_user}, {trec_password}.')
     # subprocess.check_output(['bash', '-c', 'src/main/resources/trec-results-downloader.py']))
     pass
 
@@ -80,6 +81,10 @@ def __normalize_runs(trec_identifier, working_directory):
 
     subprocess.check_output(['mkdir', '-p', target_dir])
     for run_name, run in load_all_runs(working_directory + '/unprocessed/' + trec_identifier).items():
+
+        if '/web.adhoc' in trec_identifier:
+            run = ClueWebRunDeduplication().deduplicated(run)
+
         run = normalize_run(run)
         run_name = target_dir + '/' + run_name.split('/')[-1]
         run.run_data.to_csv(run_name, sep=' ', header=False, index=False)
@@ -138,4 +143,3 @@ if __name__ == '__main__':
         print('   [\033[92mo\033[0m] Download done.')
         prepare(directory, args.directory)
         print('   [\033[92mo\033[0m] Preparation done.')
-

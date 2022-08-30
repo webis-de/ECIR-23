@@ -75,6 +75,8 @@ class RunDeduplication(CanonicalGroupDeduplicationDeduplication):
         run = normalize_run(run, depth=1000)
         qid_to_covered_doc_ids = {}
 
+        skipped = 0
+
         for _, i in run.run_data.iterrows():
             if i['query'] not in qid_to_covered_doc_ids:
                 qid_to_covered_doc_ids[i['query']] = set()
@@ -82,6 +84,7 @@ class RunDeduplication(CanonicalGroupDeduplicationDeduplication):
             doc_id = self.document_id_to_canonical_id(i['docid'])
 
             if doc_id in qid_to_covered_doc_ids[i['query']]:
+                skipped += 1
                 continue
 
             qid_to_covered_doc_ids[i['query']].add(doc_id)
@@ -91,6 +94,7 @@ class RunDeduplication(CanonicalGroupDeduplicationDeduplication):
 
         ret = TrecRun
         ret.run_data = pd.DataFrame(ret_df)
+        print(f'I removed {skipped} duplicates.')
 
         return ret
 

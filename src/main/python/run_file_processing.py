@@ -175,5 +175,5 @@ class IncompletePools:
             runs_for_pooling += [run]
         
         assert skipped_runs == len(runs_to_skip)
-        return {k:sorted(list(v)) for k,v in make_top_x_pool(runs_for_pooling, depth).pool.items()}
+        return {k: sorted(list(v)) for k,v in make_top_x_pool(runs_for_pooling, depth).pool.items()}
 
