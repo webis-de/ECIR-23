@@ -21,7 +21,6 @@ class DataConstruction:
         }
 
 
-
 class ReconstructionEvaluation:
     def __init__(self, threshold=0):
         self.__threshold = threshold
