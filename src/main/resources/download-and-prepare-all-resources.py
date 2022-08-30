@@ -20,6 +20,13 @@ SEED_URLS = {
 
     # Got the query reformulation runs thankfully from Timo Breuer
     'uqv-runs-ecir21-paper': 'https://th-koeln.sciebo.de/s/PJm1l9JnoeHvkB7',
+
+    'trec-system-runs/trec18/web.adhoc': 'https://trec.nist.gov/results/trec18/web.adhoc.input.html',
+    'trec-system-runs/trec19/web.adhoc': 'https://trec.nist.gov/results/trec19/web.adhoc.input.html',
+    'trec-system-runs/trec20/web.adhoc': 'https://trec.nist.gov/results/trec20/web.adhoc.input.html',
+    'trec-system-runs/trec21/web.adhoc': 'https://trec.nist.gov/results/trec21/web.adhoc.input.html',
+    'trec-system-runs/trec22/web.adhoc': 'https://trec.nist.gov/results/trec22/web.adhoc.input.html',
+    'trec-system-runs/trec23/web.adhoc': 'https://trec.nist.gov/results/trec23/web.adhoc.input.html',
 }
 
 BACKUP_DIR = '/mnt/ceph/storage/data-in-progress/data-research/web-search/web-search-trec/'

@@ -35,6 +35,7 @@
         "neulm": {"prefix": "input.NeuLM"},
         "muad": {"prefix": "input.muad"},
         "ms": {"prefix": "input.MS"},
+        "ie": {"prefix": "input.IE"},
         "irra": {"prefix": "input.irra"},
         "ictnet": {"prefix": "input.ICTNET"},
         "arsc": {"prefix": "input.arsc"}

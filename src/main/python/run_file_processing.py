@@ -6,7 +6,7 @@ from copy import deepcopy
 import gzip
 
 
-class RunFileGroups():
+class RunFileGroups:
     def __init__(self, group_definition_file, trec_identifier):
         self.__groups = json.load(open(group_definition_file))[trec_identifier]
 
@@ -14,7 +14,12 @@ class RunFileGroups():
         ret = {}
         for run in runs:
             group = self.assign_run_to_group_or_return_none(run)
-            assert group is not None
+
+            if not group:
+                group = self.assign_run_to_group_or_return_none(run, case_insensitive=True)
+
+            if not group:
+                raise ValueError('I cant determine a group for ' + run)
             
             if group not in ret:
                 ret[group] = []
@@ -22,15 +27,17 @@ class RunFileGroups():
             ret[group] += [run]
         return ret
 
-    def assign_run_to_group_or_return_none(self, run):
+    def assign_run_to_group_or_return_none(self, run, case_insensitive=False):
         if not self.__groups or not 'items' in dir(self.__groups) or not self.__groups.items():
             return None
         
         ret = []
         for group_name, group_definition in self.__groups.items():
             # Currently, we only support group definitions via prefixes
-            assert set(['prefix']) == group_definition.keys()
+            assert {'prefix'} == group_definition.keys()
             if ('/' + group_definition['prefix']) in run:
+                ret += [group_name]
+            if case_insensitive and ('/' + group_definition['prefix']).lower() in run.lower():
                 ret += [group_name]
 
         return ret[0] if len(ret) == 1 else None
@@ -82,7 +89,7 @@ def make_top_x_pool(list_of_runs, depth):
     return TrecPool(pool_documents)
 
 
-class IncompletePools():
+class IncompletePools:
     def __init__(self, run_dir=None, group_definition_file=None, trec_identifier=None, pool_per_run_file=None):
         self.__runs = load_all_runs(run_dir) if run_dir else None
         self.__run_file_groups = RunFileGroups(group_definition_file, trec_identifier).assign_runs_to_groups(self.__runs.keys()) if group_definition_file and trec_identifier else None
