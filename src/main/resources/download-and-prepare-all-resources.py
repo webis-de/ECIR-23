@@ -6,13 +6,12 @@ import sys
 import json
 from pathlib import Path
 import gzip
-from deduplication_util import ClueWebRunDeduplication
 from numpy import array_split
-
 
 if 'src/main/python/' not in sys.path:
     sys.path.append('src/main/python/')
 
+from deduplication_util import ClueWebRunDeduplication
 from run_file_processing import IncompletePools, load_all_runs, normalize_run
 
 SEED_URLS = {
