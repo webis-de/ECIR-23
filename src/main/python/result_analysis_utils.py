@@ -142,7 +142,7 @@ def __rename_measure(m):
         'bs-1000-ndcg@10-q-15', 'bs-1000-ndcg@10-q-5', 'bs-1000-ndcg@10-q-25',
         'bs-1000-ndcg@10-q-50', 'bs-1000-ndcg@10-q-75', 'bs-p-1000-ndcg@10-ndcg@10', 
         'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-pool-dependent-1000-ndcg@10-ndcg@10',
-        'bs-run-dependent-1000-ndcg@10-ndcg@10'
+        'bs-run-dependent-1000-ndcg@10-ndcg@10', 'bs-1000-ndcg@10-ndcg@10'
     ]
     
     to_rename = {i.lower():i.lower() for i in identical_measures}
