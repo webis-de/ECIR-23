@@ -5,7 +5,7 @@ from trectools import TrecRun
 
 
 class MemorizedNdcg:
-    def __init__(self, depth, trec_eval=True, labels=(0, 1, 2, 3)):
+    def __init__(self, depth, trec_eval=True, labels=(0, 1, 2, 3, 4)):
         self.__depth = depth
         self.__labels = labels
         self.__trec_eval = trec_eval
