@@ -1,7 +1,8 @@
 from tqdm import tqdm
 from glob import glob
 import pandas as pd
-from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model
+from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
+    LowerBoundFixedBudgetBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel
 from result_analysis_utils import load_ground_truth_data, load_evaluations, run_cross_validation
 import subprocess
 
@@ -34,8 +35,13 @@ def run_cross_validation_on_runs(runs, eval_df, bootstrap_type, trec, search_spa
         out_file = f'{out_dir}/{bootstrap_type}-results.jsonl'
 
         models = [ParametrizedBootstrappingModel(i, search_space) for i in
-                  ['rmse[0.6,1]', 'rmse[0.8,1]', 'rmse', 'rmse[1,2]', 'rmse[1,3]', 'rmse[0.1,5]', 'rmse[0.1,10]',
-                   'rmse[0.1,100]', 'rmse[0,1]']]
+                  ['rmse[0.8,1]', 'rmse', 'rmse[0.1,5]']]
+
+        models += [LowerBoundFixedBudgetBootstrappingModel(0.01, search_space),
+                   LowerBoundFixedBudgetBootstrappingModel(0.05, search_space),
+                   UpperBoundFixedBudgetBootstrappingModel(0.01, search_space),
+                   UpperBoundFixedBudgetBootstrappingModel(0.05, search_space),
+                   ]
 
         subprocess.check_output(['mkdir', '-p', out_dir])
         subprocess.check_output(['touch', out_file])
