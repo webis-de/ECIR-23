@@ -1,4 +1,5 @@
-from parametrized_bootstrapping_model import ParametrizedBootstrappingModel
+from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel,\
+    LowerBoundFixedBudgetBootstrappingModel
 from unittest import TestCase
 import json
 
@@ -136,4 +137,70 @@ class TestParametrizedBootstrappingModel(TestCase):
         
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0.25, 0.25, 0.25, 0.25])
         
+        self.assertEquals(expected, model.parameters())
+
+    def test_upper_bound_on_dataset_with_selection_of_default_solution(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[0,1]": 0.19999999999999996,
+                               "quantile": 90, "search_space_size": 5, "budget_type": "upper-bound",
+                               "budget": 0.01})
+
+        model = UpperBoundFixedBudgetBootstrappingModel(0.01, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [2, 2, 2, 2])
+
+        self.assertEquals(expected, model.parameters())
+
+    def test_upper_bound_on_dataset_with_selection_of_non_default_solution_small_budget(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[0,1]": 0.5,
+                               "quantile": 75, "search_space_size": 5, "budget_type": "upper-bound",
+                               "budget": 0.6})
+
+        model = UpperBoundFixedBudgetBootstrappingModel(0.6, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [2, 2, 2, 2])
+
+        self.assertEquals(expected, model.parameters())
+
+    def test_upper_bound_on_dataset_with_selection_of_non_default_solution_larger_budget(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[0,1]": 1.0,
+                               "quantile": 50, "search_space_size": 5, "budget_type": "upper-bound",
+                               "budget": 1.2})
+
+        model = UpperBoundFixedBudgetBootstrappingModel(1.2, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [2, 2, 2, 2])
+
+        self.assertEquals(expected, model.parameters())
+
+    def test_lower_bound_on_dataset_with_selection_of_default_solution(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[1,0]": 0.2,
+                               "quantile": 10, "search_space_size": 5, "budget_type": "lower-bound",
+                               "budget": 0.01})
+
+        model = LowerBoundFixedBudgetBootstrappingModel(0.01, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0, 0, 0, 0])
+
+        self.assertEquals(expected, model.parameters())
+
+    def test_lower_bound_on_dataset_with_selection_of_non_default_solution_small_budget(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[1,0]": 0.5,
+                               "quantile": 25, "search_space_size": 5, "budget_type": "lower-bound",
+                               "budget": 0.6})
+
+        model = LowerBoundFixedBudgetBootstrappingModel(0.6, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0, 0, 0, 0])
+
+        self.assertEquals(expected, model.parameters())
+
+    def test_lower_bound_on_dataset_with_selection_of_non_default_solution_larger_budget(self):
+        expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[1,0]": 1.0,
+                               "quantile": 50, "search_space_size": 5, "budget_type": "lower-bound",
+                               "budget": 1.2})
+
+        model = LowerBoundFixedBudgetBootstrappingModel(1.2, [10, 25, 50, 75, 90])
+
+        model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0, 0, 0, 0])
+
         self.assertEquals(expected, model.parameters())
