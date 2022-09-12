@@ -177,6 +177,10 @@ def __rename_measure(m):
         return to_rename[m.lower()]
     if 'rmse' in m.lower():
         return m.lower()
+    if 'pbs-upper-bound' in m.lower():
+        return m.lower()
+    if 'pbs-lower-bound' in m.lower():
+        return m.lower()
     if 'always-1' in m.lower():
         return 'always-1'
     if 'always-0' in m.lower():
