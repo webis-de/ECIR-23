@@ -12,7 +12,8 @@ from run_file_processing import IncompletePools
 from evaluation_util import evaluate_on_pools, evaluate_on_original_pool_only
 from cross_validation_util import cross_validation_experiment, DEFAULT_SEARCH_SPACE
 from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
-    LowerBoundFixedBudgetBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel
+    LowerBoundFixedBudgetBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel, LowerBoundDeltaModel,\
+    UpperBoundDeltaModel, ReturnAlwaysX
 
 SHARED_TASKS = {
     'trec-system-runs/trec18/web.adhoc': {
@@ -130,12 +131,25 @@ def run_cross_validation(task):
     cross_validation_experiment(
         trec=task['trec'],
         input_measure=['ndcg@10'],
-        models=[ReturnAlways1Model(), ReturnAlways0Model()],
+        models=[ReturnAlways1Model(), ReturnAlways0Model(),
+                LowerBoundDeltaModel(0.01, 'ndcg@10'), LowerBoundDeltaModel(0.05, 'ndcg@10'),
+                UpperBoundDeltaModel(0.01, 'ndcg@10'), UpperBoundDeltaModel(0.05, 'ndcg@10'),
+                ReturnAlwaysX('ndcg@10')],
         out_dir=out_dir,
         clean=False,
         working_dir=task['working_directory'],
     )
 
+    cross_validation_experiment(
+        trec=task['trec'],
+        input_measure=['condensed-ndcg@10'],
+        models=[LowerBoundDeltaModel(0.01, 'condensed-ndcg@10'), LowerBoundDeltaModel(0.05, 'condensed-ndcg@10'),
+                UpperBoundDeltaModel(0.01, 'condensed-ndcg@10'), UpperBoundDeltaModel(0.05, 'condensed-ndcg@10'),
+                ReturnAlwaysX('condensed-ndcg@10')],
+        out_dir=out_dir,
+        clean=False,
+        working_dir=task['working_directory'],
+    )
 
 if __name__ == '__main__':
     args = __parse_args()
