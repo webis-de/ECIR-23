@@ -14,10 +14,11 @@ def cross_validation_experiment(trec, input_measure, models, out_dir, clean, wor
         subprocess.check_output(['rm', '-rf', out_dir])
 
     for bootstrap_type in input_measure:
-        run_cross_validation_on_runs(min(max_runs, len(eval_df)), eval_df, bootstrap_type, trec, models, failsave)
+        run_cross_validation_on_runs(min(max_runs, len(eval_df)), eval_df, bootstrap_type, trec, models,
+                                     failsave, out_dir)
 
 
-def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, failsave):
+def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, failsave, out_dir):
     ret = []
     for i in tqdm(list(range(runs)), input_measure + ' on ' + trec):
         try:
@@ -37,7 +38,6 @@ def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, fai
         if ground_truth_data is None:
             continue
 
-        out_dir = f'cross-validation-results/{trec}'
         out_file = f'{out_dir}/{input_measure}-results.jsonl'
 
         subprocess.check_output(['mkdir', '-p', out_dir])

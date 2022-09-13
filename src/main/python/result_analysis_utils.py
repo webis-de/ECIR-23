@@ -84,7 +84,11 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
     for query_id, y in df['y'].items():
         if isnan(y):
             continue
-        if query_id not in df['x'] or (type(df['x'][query_id]) is not list and isnan(df['x'][query_id])) or any([isnan(i) for i in df['x'][query_id]]):
+        if query_id not in df['x']:
+            continue
+        if type(df['x'][query_id]) is not list and isnan(df['x'][query_id]):
+            continue
+        if type(df['x'][query_id]) is list and any([isnan(i) for i in df['x'][query_id]]):
             continue
         
         ret += [{'run': df['run'], 'query': query_id, 'x': df['x'][query_id], 'y': y, 'measures': df['measures']}]
