@@ -34,7 +34,7 @@ def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, fai
 
             continue
 
-        if not ground_truth_data:
+        if ground_truth_data is None:
             continue
 
         out_dir = f'cross-validation-results/{trec}'
