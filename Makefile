@@ -36,6 +36,12 @@ run-evaluation-tasks:
 run-evaluation-tasks-in-slurm:
 	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l)%90 src/main/sh/run-evaluation-tasks-in-slurm.sh
 
+run-cross-validation-tasks-in-slurm:
+	sbatch -c 2 --mem=30g --array=0-$(shell cat src/main/resources/cross-validation-tasks.jsonl|wc -l)%90 src/main/sh/run-cross-validation-tasks-in-slurm.sh
+
 jupyterlab:
 	.venv/bin/jupyter-lab --ip 0.0.0.0
+
+srun-jupyterlab:
+	srun -c 10 --mem=90g --pty .venv/bin/jupyter-lab --ip 0.0.0.0
 

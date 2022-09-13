@@ -1,0 +1,7 @@
+[{"trec": "trec13", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec18", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec19", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec20", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec21", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec22", "task_to_execute": "run_cross_validation"}]
+[{"trec": "trec23", "task_to_execute": "run_cross_validation"}]
