@@ -62,7 +62,7 @@ def __parse_args():
                         help='A file in jsonl format that specified the tasks to execute')
 
     parser.add_argument('--methodToExecute', type=str, required=False, default=None,
-                        choices=['run_task', 'run_task_on_qrels'])
+                        choices=['run_task', 'run_task_on_qrels', 'run_cross_validation'])
 
     return parser.parse_args()
 
@@ -110,12 +110,10 @@ def run_task_on_qrels(task):
 
 
 def run_cross_validation(task):
-    trec = task['trec']
-
-    out_dir = f'src/main/resources/processed/cross-validation-results/{trec}'
+    out_dir = task['working_directory'] + '/' + task['out_file_name']
 
     cross_validation_experiment(
-        trec=trec,
+        trec=task['trec'],
         input_measure=['bs-p-1000-ndcg@10-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10',
                        'bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10'],
         models=[ParametrizedBootstrappingModel('rmse', DEFAULT_SEARCH_SPACE),
@@ -129,7 +127,7 @@ def run_cross_validation(task):
     )
 
     cross_validation_experiment(
-        trec=trec,
+        trec=task['trec'],
         input_measure=['ndcg@10'],
         models=[ReturnAlways1Model(), ReturnAlways0Model()],
         out_dir=out_dir,
