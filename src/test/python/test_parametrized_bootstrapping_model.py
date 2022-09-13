@@ -1,5 +1,6 @@
 from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel,\
-    LowerBoundFixedBudgetBootstrappingModel
+    LowerBoundFixedBudgetBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
+    UpperBoundDeltaModel, LowerBoundDeltaModel
 from unittest import TestCase
 import json
 
@@ -160,6 +161,7 @@ class TestParametrizedBootstrappingModel(TestCase):
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [2, 2, 2, 2])
 
         self.assertEquals(expected, model.parameters())
+        self.assertEquals('pbs-upper-bound-0.6', str(model))
 
     def test_upper_bound_on_dataset_with_selection_of_non_default_solution_larger_budget(self):
         expected = json.dumps({"model": "FixedBudgetBootstrappingModel", "rmse[0,1]": 1.0,
@@ -204,3 +206,103 @@ class TestParametrizedBootstrappingModel(TestCase):
         model.fit([[0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0], [0, 1.0, 2.0]], [0, 0, 0, 0])
 
         self.assertEquals(expected, model.parameters())
+
+    def test_predict_always_1_model(self):
+        model = ReturnAlways1Model()
+        expected = [1, 1, 1, 1, 1]
+
+        self.assertEquals(expected, model.predict([0, 0, 0, 0, 0]))
+        self.assertEquals(expected, model.predict([1, 1, 1, 1, 1]))
+
+    def test_predict_always_0_model(self):
+        model = ReturnAlways0Model()
+        expected = [0, 0, 0, 0, 0]
+
+        self.assertEquals(expected, model.predict([0, 0, 0, 0, 0]))
+        self.assertEquals(expected, model.predict([1, 1, 1, 1, 1]))
+
+    def test_upper_bound_of_zero(self):
+        model = UpperBoundDeltaModel(0.01, 'm')
+
+        model.fit([0.5, 0.5, 0.5], [0.4, 0.4, 0.4])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.3, 0.3, 0.3, 0.3], model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.6, 0.6, 0.6, 0.6], model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[0,1]": 0.0, "relative_delta": 0.0, "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())
+
+    def test_upper_bound_of_larger_than_001(self):
+        model = UpperBoundDeltaModel(0.01, 'm')
+
+        model.fit([0.4, 0.4, 0.4], [0.5, 0.5, 0.5])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.369, 0.369, 0.369, 0.369], model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.738, 0.738, 0.738, 0.738], model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[0,1]": 0.007999999999999952, "relative_delta": 0.23,
+                    "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())
+
+    def test_upper_bound_of_larger_than_005(self):
+        model = UpperBoundDeltaModel(0.05, 'm')
+
+        model.fit([0.4, 0.4, 0.4], [0.5, 0.5, 0.5])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.33899999999999997, 0.33899999999999997, 0.33899999999999997, 0.33899999999999997],
+                          model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.6779999999999999, 0.6779999999999999, 0.6779999999999999, 0.6779999999999999],
+                          model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[0,1]": 0.04799999999999999, "relative_delta": 0.13,
+                    "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())
+
+    def test_lower_bound_of_zero(self):
+        model = LowerBoundDeltaModel(0.01, 'm')
+
+        model.fit([0.4, 0.4, 0.4], [0.5, 0.5, 0.5])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.3, 0.3, 0.3, 0.3], model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.6, 0.6, 0.6, 0.6], model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[1,0]": 0.0, "relative_delta": 0.0, "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())
+
+    def test_lower_bound_of_larger_than_001(self):
+        model = LowerBoundDeltaModel(0.01, 'm')
+
+        model.fit([0.5, 0.5, 0.5], [0.4, 0.4, 0.4])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.243, 0.243, 0.243, 0.243], model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.486, 0.486, 0.486, 0.486], model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[1,0]": 0.0050000000000000044, "relative_delta": -0.19,
+                    "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())
+
+    def test_lower_bound_of_larger_than_005(self):
+        model = LowerBoundDeltaModel(0.05, 'm')
+
+        model.fit([0.4, 0.4, 0.4], [0.3, 0.3, 0.3])
+
+        self.assertEquals([0, 0, 0, 0], model.predict([0, 0, 0, 0]))
+        self.assertEquals([0.261, 0.261, 0.261, 0.261],
+                          model.predict([0.3, 0.3, 0.3, 0.3]))
+        self.assertEquals([0.522, 0.522, 0.522, 0.522],
+                          model.predict([0.6, 0.6, 0.6, 0.6]))
+
+        expected = {"model": "GridSearchDeltaModel", "rmse[1,0]": 0.04800000000000004, "relative_delta": -0.13,
+                    "search_space_size": 101}
+        print(model.parameters())
+        self.assertEquals(json.dumps(expected), model.parameters())

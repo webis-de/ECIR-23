@@ -140,22 +140,25 @@ def run_cross_validation(task):
 if __name__ == '__main__':
     args = __parse_args()
     tasks = [json.loads(i) for i in open(args.taskDefinititionFile)]
-    
-    task = tasks[args.taskNumber]
 
-    if not task_already_executed(task):
-        if type(task) == list:
-            for t in task:
-                method_to_execute = locals()[t['task_to_execute']]
+    if args.taskNumber >= len(tasks) or args.taskNumber < 0:
+        print(f'I skip the non-existing task with number {args.taskNumber}')
+    else:
+        task = tasks[args.taskNumber]
+
+        if not task_already_executed(task):
+            if type(task) == list:
+                for t in task:
+                    method_to_execute = locals()[t['task_to_execute']]
+                    try:
+                        method_to_execute(t)
+                    except Exception as e:
+                        print(f'Got error/exception during task {t}')
+                        raise e
+            else:
+                method_to_execute = locals()[task['task_to_execute']]
                 try:
-                    method_to_execute(t)
+                    method_to_execute(task)
                 except Exception as e:
-                    print(f'Got error/exception during task {t}')
+                    print(f'Got error/exception during task {task}')
                     raise e
-        else:
-            method_to_execute = locals()[task['task_to_execute']]
-            try:
-                method_to_execute(task)
-            except Exception as e:
-                print(f'Got error/exception during task {task}')
-                raise e
