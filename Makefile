@@ -12,9 +12,12 @@ help:
 	@echo "       run all evaluations"
 	@echo "make run-evaluation-tasks-in-slurm"
 	@echo "       run all evaluations in slurm (idempotent)"
+	@echo "make run-cross-validation-tasks-in-slurm"
+	@echo "       run all cross-validations in slurm (idempotent)"
 	@echo "make jupyterlab"
 	@echo "       start a jupyterlab server"
-
+	@echo "srun-jupyterlab"
+	@echo "       start a jupyterlab server in the slurm cluster"
 
 clean:
 	@rm -Rf ${VENV_NAME}
