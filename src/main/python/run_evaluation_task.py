@@ -10,21 +10,11 @@ if 'src/main/python/' not in sys.path:
     sys.path.append('src/main/python/')
 from run_file_processing import IncompletePools
 from evaluation_util import evaluate_on_pools, evaluate_on_original_pool_only
-
+from cross_validation_util import cross_validation_experiment, DEFAULT_SEARCH_SPACE
+from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
+    LowerBoundFixedBudgetBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel
 
 SHARED_TASKS = {
-    'trec-system-runs/trec13/robust': {
-        'seed_url': 'https://trec.nist.gov/results/trec13/robust.input.html',
-        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt'
-    },
-
-    # Got the query reformulation runs thankfully from Timo Breuer
-    'uqv-runs-ecir21-paper': {
-        'seed_url': 'https://th-koeln.sciebo.de/s/PJm1l9JnoeHvkB7',
-        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.core17.txt'
-    },
-
-
     'trec-system-runs/trec18/web.adhoc': {
         'seed_url': 'https://trec.nist.gov/results/trec18/web.adhoc.input.html',
         'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.1-50.txt'
@@ -117,6 +107,34 @@ def run_task_on_qrels(task):
 
     with open(out_file, 'w+') as f:
         f.write(json.dumps(eval_result) + '\n')
+
+
+def run_cross_validation(task):
+    trec = task['trec']
+
+    out_dir = f'src/main/resources/processed/cross-validation-results/{trec}'
+
+    cross_validation_experiment(
+        trec=trec,
+        input_measure=['bs-p-1000-ndcg@10-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10',
+                       'bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10'],
+        models=[ParametrizedBootstrappingModel('rmse', DEFAULT_SEARCH_SPACE),
+                LowerBoundFixedBudgetBootstrappingModel(0.01, DEFAULT_SEARCH_SPACE),
+                LowerBoundFixedBudgetBootstrappingModel(0.05, DEFAULT_SEARCH_SPACE),
+                UpperBoundFixedBudgetBootstrappingModel(0.01, DEFAULT_SEARCH_SPACE),
+                UpperBoundFixedBudgetBootstrappingModel(0.05, DEFAULT_SEARCH_SPACE),
+                ],
+        out_dir=out_dir,
+        clean=True
+    )
+
+    cross_validation_experiment(
+        trec=trec,
+        input_measure=['ndcg@10'],
+        models=[ReturnAlways1Model(), ReturnAlways0Model()],
+        out_dir=out_dir,
+        clean=False
+    )
 
 
 if __name__ == '__main__':
