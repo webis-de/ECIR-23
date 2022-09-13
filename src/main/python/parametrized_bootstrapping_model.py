@@ -59,6 +59,16 @@ class ReturnAlways0Model(FixedDeltaModel):
         return 'always-0'
 
 
+class ReturnAlwaysX(FixedDeltaModel):
+    def __init__(self, original_measure):
+        super().__init__()
+        self.absolute_delta = 0
+        self.original_measure = original_measure
+
+    def __str__(self):
+        return 'always-' + self.original_measure
+
+
 class GridSearchDeltaModel(FixedDeltaModel):
     def __init__(self, budget, budget_type, original_measure):
         super().__init__()

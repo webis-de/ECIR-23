@@ -1,6 +1,6 @@
 from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel,\
     LowerBoundFixedBudgetBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
-    UpperBoundDeltaModel, LowerBoundDeltaModel
+    UpperBoundDeltaModel, LowerBoundDeltaModel, ReturnAlwaysX
 from unittest import TestCase
 import json
 
@@ -220,6 +220,14 @@ class TestParametrizedBootstrappingModel(TestCase):
 
         self.assertEquals(expected, model.predict([0, 0, 0, 0, 0]))
         self.assertEquals(expected, model.predict([1, 1, 1, 1, 1]))
+
+    def test_predict_always_x_model(self):
+        model = ReturnAlwaysX('m')
+
+        self.assertEquals([0, 0, 0, 0, 0], model.predict([0, 0, 0, 0, 0]))
+        self.assertEquals([0.4, 0.4, 0.4], model.predict([0.4, 0.4, 0.4]))
+        self.assertEquals([0.2, 0.2, 0.2], model.predict([0.2, 0.2, 0.2]))
+        self.assertEquals([1, 1, 1], model.predict([1, 1, 1]))
 
     def test_upper_bound_of_zero(self):
         model = UpperBoundDeltaModel(0.01, 'm')
