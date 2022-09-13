@@ -37,7 +37,7 @@ run-evaluation-tasks-in-slurm:
 	sbatch --array=0-$(shell cat src/main/resources/all-tasks.jsonl|wc -l)%150 src/main/sh/run-evaluation-tasks-in-slurm.sh
 
 run-cross-validation-tasks-in-slurm:
-	sbatch --array=0-$(shell cat src/main/resources/cross-validation-tasks.jsonl|wc -l)%90 src/main/sh/run-cross-validation-tasks-in-slurm.sh
+	sbatch --array=0-$(shell cat src/main/resources/cross-validation-tasks.jsonl|wc -l) src/main/sh/run-cross-validation-tasks-in-slurm.sh
 
 jupyterlab:
 	.venv/bin/jupyter-lab --ip 0.0.0.0
