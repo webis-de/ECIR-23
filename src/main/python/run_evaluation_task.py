@@ -123,7 +123,8 @@ def run_cross_validation(task):
                 UpperBoundFixedBudgetBootstrappingModel(0.05, DEFAULT_SEARCH_SPACE),
                 ],
         out_dir=out_dir,
-        clean=True
+        clean=True,
+        working_dir=task['working_directory'],
     )
 
     cross_validation_experiment(
@@ -131,7 +132,8 @@ def run_cross_validation(task):
         input_measure=['ndcg@10'],
         models=[ReturnAlways1Model(), ReturnAlways0Model()],
         out_dir=out_dir,
-        clean=False
+        clean=False,
+        working_dir=task['working_directory'],
     )
 
 

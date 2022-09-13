@@ -7,8 +7,8 @@ import subprocess
 DEFAULT_SEARCH_SPACE = (0, 1, 2) + tuple(range(5, 96, 5)) + (98, 99, 100)
 
 
-def cross_validation_experiment(trec, input_measure, models, out_dir, clean, max_runs=100000, failsave=True):
-    eval_df = load_evaluations(tqdm(glob('../resources/eval/trec-system-runs/' + trec + '/*.jsonl')))
+def cross_validation_experiment(trec, input_measure, models, out_dir, clean, working_dir, max_runs=100000, failsave=True):
+    eval_df = load_evaluations(tqdm(glob(working_dir + '/eval/trec-system-runs/' + trec + '/*.jsonl')))
 
     if clean:
         subprocess.check_output(['rm', '-rf', out_dir])
