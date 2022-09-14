@@ -21,7 +21,7 @@ class DataConstruction:
         }
 
 
-class ReconstructionEvaluation:
+class AllApproachesDidNotParticipateInPoolingReconstructionEvaluation:
     def __init__(self, threshold=0):
         self.__threshold = threshold
 

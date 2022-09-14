@@ -1,5 +1,5 @@
 from unittest import TestCase
-from reconstruction_evaluation import ReconstructionEvaluation, DataConstruction
+from reconstruction_evaluation import AllApproachesDidNotParticipateInPoolingReconstructionEvaluation, DataConstruction
 
 
 class TestReconstructionEvaluation(TestCase):
@@ -13,7 +13,7 @@ class TestReconstructionEvaluation(TestCase):
         expected_correct_pairs = {('b', 'a'), ('c', 'a'), ('c', 'b')}
         expected_retrieved_pairs = {('c', 'a'), ('c', 'b')}
 
-        reconstruction_eval = ReconstructionEvaluation()
+        reconstruction_eval = AllApproachesDidNotParticipateInPoolingReconstructionEvaluation()
 
         self.assertEquals(expected_correct_pairs, reconstruction_eval.ground_truth_pairs(topics))
         self.assertEquals(expected_retrieved_pairs, reconstruction_eval.predicted_pairs(topics))
@@ -30,7 +30,7 @@ class TestReconstructionEvaluation(TestCase):
         expected_correct_pairs = {('a', 'b'), ('a', 'c'), ('b', 'c')}
         expected_retrieved_pairs = set()
 
-        reconstruction_eval = ReconstructionEvaluation()
+        reconstruction_eval = AllApproachesDidNotParticipateInPoolingReconstructionEvaluation()
 
         self.assertEquals(expected_correct_pairs, reconstruction_eval.ground_truth_pairs(topics))
         self.assertEquals(expected_retrieved_pairs, reconstruction_eval.predicted_pairs(topics))
@@ -47,7 +47,7 @@ class TestReconstructionEvaluation(TestCase):
         expected_correct_pairs = {('b', 'a'), ('c', 'a'), ('c', 'b')}
         expected_retrieved_pairs = {('c', 'a')}
 
-        reconstruction_eval = ReconstructionEvaluation()
+        reconstruction_eval = AllApproachesDidNotParticipateInPoolingReconstructionEvaluation()
 
         self.assertEquals(expected_correct_pairs, reconstruction_eval.ground_truth_pairs(topics))
         self.assertEquals(expected_retrieved_pairs, reconstruction_eval.predicted_pairs(topics))
@@ -64,7 +64,7 @@ class TestReconstructionEvaluation(TestCase):
         expected_correct_pairs = {('b', 'a'), ('c', 'a'), ('c', 'b')}
         expected_retrieved_pairs = {('c', 'a')}
 
-        reconstruction_eval = ReconstructionEvaluation(0.00001)
+        reconstruction_eval = AllApproachesDidNotParticipateInPoolingReconstructionEvaluation(0.00001)
 
         self.assertEquals(expected_correct_pairs, reconstruction_eval.ground_truth_pairs(topics))
         self.assertEquals(expected_retrieved_pairs, reconstruction_eval.predicted_pairs(topics))
@@ -81,7 +81,7 @@ class TestReconstructionEvaluation(TestCase):
         expected_correct_pairs = {('c', 'a')}
         expected_retrieved_pairs = set()
 
-        reconstruction_eval = ReconstructionEvaluation(0.02000001)
+        reconstruction_eval = AllApproachesDidNotParticipateInPoolingReconstructionEvaluation(0.02000001)
 
         self.assertEquals(expected_correct_pairs, reconstruction_eval.ground_truth_pairs(topics))
         self.assertEquals(expected_retrieved_pairs, reconstruction_eval.predicted_pairs(topics))
