@@ -95,11 +95,11 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
 
     for run_name in load_all_runs(working_directory + '/processed/normalized-runs/' + trec_identifier).keys():
         for measure in [
-            'unjudged@10', 'unjudged@20',
+            'unjudged@10', #'unjudged@20',
             'ndcg@10', 'condensed-ndcg@10', 'residual-ndcg@10',
-            'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
-            'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
-            'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
+            #'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
+            #'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
+            #'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
             'bs-1000-ndcg@10', 'bs-p-1000-ndcg@10', 'bs-pool-dependent-1000-ndcg@10',
             'bs-run-dependent-1000-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10',
         ]:
@@ -109,14 +109,14 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
                      'task_to_execute': 'run_task'
                      }]
         
-    with open(output_file, 'w') as f:
-        for split in array_split(ret, 900):
+    with open(output_file, 'a+') as f:
+        for split in array_split(ret, 120):
             f.write(json.dumps(list(split)) + '\n')
 
 
 def prepare(trec_identifier, working_directory):
-    __normalize_runs(trec_identifier, working_directory)
-    __create_pools_per_run(trec_identifier, working_directory)
+    #__normalize_runs(trec_identifier, working_directory)
+    #__create_pools_per_run(trec_identifier, working_directory)
     __create_evaluation_tasks(trec_identifier, working_directory)
 
 
