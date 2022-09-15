@@ -97,11 +97,18 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
         for measure in [
             'unjudged@10', #'unjudged@20',
             'ndcg@10', 'condensed-ndcg@10', 'residual-ndcg@10',
+<<<<<<< HEAD
             #'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
             #'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
             #'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
+=======
+            # 'ndcg@20',  'condensed-ndcg@20',  'residual-ndcg@20',
+            # 'rbp@10', 'condensed-rbp@10', 'residual-rbp@10',
+            # 'rbp@20', 'condensed-rbp@20', 'residual-rbp@20',
+>>>>>>> 35c4e6e879ea18afd42c25ddafbb54fa315ee599
             'bs-1000-ndcg@10', 'bs-p-1000-ndcg@10', 'bs-pool-dependent-1000-ndcg@10',
             'bs-run-dependent-1000-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10',
+            'bs-run-and-pool-dependent2-1000-ndcg@10',
         ]:
             ret += [{'run': run_name, 'measure': measure, 'trec_identifier': trec_identifier,
                      'working_directory': working_directory,

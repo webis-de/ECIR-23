@@ -2,7 +2,7 @@ from trectools import TrecRun, TrecQrel, TrecEval
 import pandas as pd
 from run_file_processing import normalize_run
 from copy import deepcopy
-from probability_estimation import CountProbabilityEstimator, RunIndependentCountProbabilityEstimator, PoissonEstimator
+from probability_estimation import CountProbabilityEstimator, RunIndependentCountProbabilityEstimator, PoissonEstimator, RunAndPoolDependentProbabilityEstimator
 from bootstrap_util import BootstrappEval, FullyIndependentBootstrappingStrategey
 from pool_bootstrap_util import PoolAndRunIndependentBootstrappingStrategey, ProbabilityEstimatedBootstrappingStrategey
 
@@ -130,6 +130,14 @@ def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
         )
         bs_eval = BootstrappEval(f'ndcg@{depth}', bs_strategy)
         ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
+    elif measure.startswith('bs-run-and-pool-dependent2-1000-ndcg@10'):
+        bs_strategy = ProbabilityEstimatedBootstrappingStrategey(
+            trec_eval.qrels,
+            RunAndPoolDependentProbabilityEstimator()
+        )
+        bs_eval = BootstrappEval(f'ndcg@{depth}', bs_strategy)
+        ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
+    
     else:
         raise ValueError('Can not handle measure "' + measure +'".')
 
