@@ -181,6 +181,8 @@ def __rename_measure(m):
         return to_rename[m.lower()]
     if 'rmse' in m.lower():
         return m.lower()
+    if 'bs-run-and-pool-dependent2' in m.lower():
+        return m.lower()
     if 'pbs-upper-bound' in m.lower():
         return m.lower()
     if 'pbs-lower-bound' in m.lower():
