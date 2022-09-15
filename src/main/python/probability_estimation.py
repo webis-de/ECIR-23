@@ -66,6 +66,44 @@ class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
         return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), super().smoothing())
 
 
+class RunAndPoolDependentProbabilityEstimator(ProbabilityEstimator):
+    def estimate_probabilities(self, run, qrels):
+        if type(run) == TrecRun:
+            return self.estimate_probabilities(run.run_data, qrels)
+        if type(qrels) == TrecQrel:
+            return self.estimate_probabilities(run, qrels.qrels_data)
+
+        ret = pd.merge(run, qrels[["query", "docid", "rel"]], how="left")
+
+        num_judged = len(ret[~ret["rel"].isnull()])
+        num_relevant = len(ret[ret["rel"] == 1])
+
+        if num_judged <= 0.0000000000001:
+            # Default
+            return {0: 1, 1: 0, 2: 0, 3: 0}
+
+        p_relevant = num_relevant/num_judged
+        p_unjudged = (len(ret) - num_judged)/len(ret)
+
+        if p_unjudged <= 0.0000000000001:
+            # Default
+            return {0: 0, 1: 0, 2: 0, 3: 0}
+
+        p_relevant_from_pool = len(qrels[qrels['rel'] == 1])/len(qrels)
+
+        p_relevant_given_unjudged = p_relevant_from_pool*p_relevant
+
+        return {
+            0: 1 - p_relevant_given_unjudged,
+            1: p_relevant_given_unjudged,
+            2: 0,
+            3: 0,
+        }
+
+    def estimate_single_probability(self, run, qrels, relevance_level, k=None):
+        raise ValueError('Not implemented')
+
+
 class PoissonEstimator(CountProbabilityEstimator):
     def __init__(self, to_add=1, p_add_from_pool_given_unjudged=None, lower_p=None, upper_p=None):
         self.__to_add = to_add
