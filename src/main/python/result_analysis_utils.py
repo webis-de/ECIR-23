@@ -189,6 +189,10 @@ def __rename_measure(m):
         return 'always-1'
     if 'always-0' in m.lower():
         return 'always-0'
+    if m.lower().startswith('gsd-'):
+        return m.lower()
+    if m.lower().startswith('always-'):
+        return m.lower()
 
 
 def __process_row(df_row):
