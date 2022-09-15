@@ -16,6 +16,11 @@ from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, Ret
     UpperBoundDeltaModel, ReturnAlwaysX
 
 SHARED_TASKS = {
+    'trec-system-runs/trec13/robust': {
+        'seed_url': 'https://trec.nist.gov/results/trec13/robust.input.html',
+        'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.robust04.txt',
+    },
+
     'trec-system-runs/trec18/web.adhoc': {
         'seed_url': 'https://trec.nist.gov/results/trec18/web.adhoc.input.html',
         'qrels': 'src/main/resources/unprocessed/topics-and-qrels/qrels.web.1-50.txt'
@@ -150,6 +155,7 @@ def run_cross_validation(task):
         clean=False,
         working_dir=task['working_directory'],
     )
+
 
 if __name__ == '__main__':
     args = __parse_args()
