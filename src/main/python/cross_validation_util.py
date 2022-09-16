@@ -20,7 +20,7 @@ def cross_validation_experiment(trec, input_measure, models, out_dir, clean, wor
 
 def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, failsave, out_dir):
     ret = []
-    for i in tqdm(list(range(runs)), input_measure + ' on ' + trec):
+    for i in tqdm(list(range(runs)), f'{input_measure} on {trec}'):
         try:
             ground_truth_data = load_ground_truth_data(
                 df=eval_df[eval_df['run'] == eval_df.iloc[i]['run']],
