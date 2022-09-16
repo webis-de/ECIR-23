@@ -38,7 +38,9 @@ def run_cross_validation_on_runs(runs, eval_df, input_measure, trec, models, fai
         if ground_truth_data is None:
             continue
 
-        out_file = f'{out_dir}/{"-".join(input_measure)}-results.jsonl'
+        out_file = f'{out_dir}/{input_measure}-results.jsonl'
+        if type(input_measure) is tuple or type(input_measure) is list:
+            out_file = f'{out_dir}/{"-".join(input_measure)}-results.jsonl'
 
         subprocess.check_output(['mkdir', '-p', out_dir])
         subprocess.check_output(['touch', out_file])
