@@ -7,19 +7,23 @@ from io import StringIO
 
 class TestResultAnalysisUtils(TestCase):
     def test_loading_of_raw_results(self):
-        df = load_raw_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl')).to_json(lines=True, orient='records')
+        df = load_raw_evaluations(['src/test/resources/dummy-eval-results/dummy-results-1.jsonl',
+                                   'src/test/resources/dummy-eval-results/dummy-results-2.jsonl'])\
+            .to_json(lines=True, orient='records')
 
         print(df)
         expected = """{"run":"a","pooling":"complete-pool-depth-10","ndcg@10-NDCG@10":"{\\"1\\": 1.0, \\"2\\": 0.0, \\"3\\": 1.0, \\"4\\": 0.0}","bs-p-1000-ndcg@10-NDCG@10":null}
 {"run":"a","pooling":"depth-10-pool-incomplete-for-a","ndcg@10-NDCG@10":"{\\"1\\": -1.0, \\"2\\": -1.0, \\"3\\": -1.0, \\"4\\": -1.0}","bs-p-1000-ndcg@10-NDCG@10":null}
 {"run":"a","pooling":"complete-pool-depth-10","ndcg@10-NDCG@10":null,"bs-p-1000-ndcg@10-NDCG@10":"{\\"1\\": [1, 1, 1, 1], \\"2\\": [0, 0, 0, 0], \\"3\\": [1, 1, 1, 1], \\"4\\": [0, 0, 0, 0]}"}
 {"run":"a","pooling":"depth-10-pool-incomplete-for-a","ndcg@10-NDCG@10":null,"bs-p-1000-ndcg@10-NDCG@10":"{\\"1\\": [0, 0, 0, 1], \\"2\\": [0, 1, 1, 1], \\"3\\": [0, 0, 0, 1], \\"4\\": [0, 1, 1, 1]}"}"""
-    
+
         self.assertEquals(df, expected)
 
 
     def test_loading_of_results(self):
-        df = load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl')).to_json(lines=True, orient='records')
+        df = load_evaluations(['src/test/resources/dummy-eval-results/dummy-results-1.jsonl',
+                               'src/test/resources/dummy-eval-results/dummy-results-2.jsonl'])\
+            .to_json(lines=True, orient='records')
 
         expected = """{"('depth-10-complete', 'ndcg@10')":"{\\"1\\": 1.0, \\"2\\": 0.0, \\"3\\": 1.0, \\"4\\": 0.0}","('depth-10-incomplete', 'ndcg@10')":"{\\"1\\": -1.0, \\"2\\": -1.0, \\"3\\": -1.0, \\"4\\": -1.0}","('depth-10-complete', 'bs-p-1000-ndcg@10-ndcg@10')":"{\\"1\\": [1, 1, 1, 1], \\"2\\": [0, 0, 0, 0], \\"3\\": [1, 1, 1, 1], \\"4\\": [0, 0, 0, 0]}","('depth-10-incomplete', 'bs-p-1000-ndcg@10-ndcg@10')":"{\\"1\\": [0, 0, 0, 1], \\"2\\": [0, 1, 1, 1], \\"3\\": [0, 0, 0, 1], \\"4\\": [0, 1, 1, 1]}","run":"a"}"""
     
@@ -177,3 +181,34 @@ a   0           {"1": 0.0, "3": 0.0, "2": 1.0, "4": 1.0}               a"""
         print(actual)
         
         self.assertEquals(str(actual), expected)
+
+    def test_cross_validation_with_model_returning_always_0_having_multiple_fields_as_input_assuring_splits_are_correct(self):
+        class Tmp():
+            def fit(self, x, y):
+                if x == [[[0, 0, 0, 1], 0.1], [[0, 0, 0, 1], 0.1]] and y == [1.0, 1.0]:
+                    return
+
+                if x == [[[0, 1, 1, 1], 0.2], [[0, 1, 1, 1], 0.2]] and y == [0.0, 0.0]:
+                    return
+
+                raise ValueError('Invalid Input')
+
+            def predict(self, X):
+                return [0] * len(X)
+
+            def __str__(self):
+                return 'tmp'
+
+        expected = """{"run":"a","query":"1","x":[[0,0,0,1],0.1],"y":1.0,"measures":{"x":["bs-p-1000-ndcg@10-ndcg@10","condensed-ndcg@10"],"y":"ndcg@10"},"split":0,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"3","x":[[0,0,0,1],0.1],"y":1.0,"measures":{"x":["bs-p-1000-ndcg@10-ndcg@10","condensed-ndcg@10"],"y":"ndcg@10"},"split":0,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"2","x":[[0,1,1,1],0.2],"y":0.0,"measures":{"x":["bs-p-1000-ndcg@10-ndcg@10","condensed-ndcg@10"],"y":"ndcg@10"},"split":1,"y_prediction":0,"model":"tmp"}
+{"run":"a","query":"4","x":[[0,1,1,1],0.2],"y":0.0,"measures":{"x":["bs-p-1000-ndcg@10-ndcg@10","condensed-ndcg@10"],"y":"ndcg@10"},"split":1,"y_prediction":0,"model":"tmp"}"""
+
+        # I want that this method can use multiple inputs
+        for inp in [glob('src/test/resources/dummy-eval-results/*.jsonl'),
+                    load_evaluations(glob('src/test/resources/dummy-eval-results/*.jsonl'))]:
+            ground_truth_data = load_ground_truth_data(inp, 'ndcg', 10, ('bs-p-1000-ndcg@10-ndcg@10', 'condensed-ndcg@10'), random_state=3)
+            actual = run_cross_validation(ground_truth_data, model=Tmp())
+            actual = actual.to_json(lines=True, orient='records')
+            print(actual)
+            self.assertEquals(expected, actual)

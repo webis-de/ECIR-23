@@ -71,14 +71,30 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
         raise ValueError('I expect exactly one run for the construction of the ground-truth data. Got ' + str(len(df)))
     
     df = df.iloc[0].to_dict()
-    
-    df = {
-        'run': df['run'],
-        'measures': {'x': input_measure, 'y': f'{ground_truth_measure}@{depth}'},
-        'x': json.loads(df[(f'depth-{depth}-incomplete', input_measure)]),
-        'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
-    }
-   
+
+    if type(input_measure) == tuple:
+        x_values = {}
+        for measure in input_measure:
+            x_value = json.loads(df[(f'depth-{depth}-incomplete', measure)])
+
+            for k, v in x_value.items():
+                if k not in x_values:
+                    x_values[k] = []
+                x_values[k] += [v]
+
+        df = {
+            'run': df['run'],
+            'measures': {'x': input_measure, 'y': f'{ground_truth_measure}@{depth}'},
+            'x': x_values,
+            'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
+        }
+    else:
+        df = {
+            'run': df['run'],
+            'measures': {'x': input_measure, 'y': f'{ground_truth_measure}@{depth}'},
+            'x': json.loads(df[(f'depth-{depth}-incomplete', input_measure)]),
+            'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
+        }
     ret = []
    
     for query_id, y in df['y'].items():
@@ -88,7 +104,7 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
             continue
         if type(df['x'][query_id]) is not list and isnan(df['x'][query_id]):
             continue
-        if type(df['x'][query_id]) is list and any([isnan(i) for i in df['x'][query_id]]):
+        if type(df['x'][query_id]) is list and any([type(i) is not list and isnan(i) for i in df['x'][query_id]]):
             continue
         
         ret += [{'run': df['run'], 'query': query_id, 'x': df['x'][query_id], 'y': y, 'measures': df['measures']}]
