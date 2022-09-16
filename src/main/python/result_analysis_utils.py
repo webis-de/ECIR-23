@@ -63,7 +63,7 @@ def run_cross_validation(ground_truth_data, model):
     return pd.DataFrame(ret)
 
 
-def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, random_state=None):
+def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, random_state=None, failsave=True):
     if type(df) == list:
         return load_ground_truth_data(load_evaluations(df), ground_truth_measure, depth, input_measure, random_state)
     
@@ -90,7 +90,7 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
         }
 
         for k, v in df['x'].items():
-            if len(v) != len(input_measure):
+            if not(failsave) and len(v) != len(input_measure):
                 raise ValueError(f'Cant handle missing values for {k}: {v}')
     else:
         df = {
