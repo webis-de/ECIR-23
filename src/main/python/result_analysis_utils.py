@@ -88,6 +88,10 @@ def load_ground_truth_data(df, ground_truth_measure, depth, input_measure, rando
             'x': x_values,
             'y': json.loads(df[(f'depth-{depth}-complete', f'{ground_truth_measure}@{depth}')])
         }
+
+        for k, v in df['x'].items():
+            if len(v) != len(input_measure):
+                raise ValueError(f'Cant handle missing values for {k}: {v}')
     else:
         df = {
             'run': df['run'],
