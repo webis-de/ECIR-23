@@ -215,6 +215,8 @@ def __rename_measure(m):
         return m.lower()
     if m.lower().startswith('always-'):
         return m.lower()
+    if m.lower().startswith('bs-ci-'):
+        return m.lower()
 
 
 def __process_row(df_row):
@@ -287,7 +289,7 @@ def __load_eval_file(file_name, expected_queries=None, runs_to_skip=None):
         for result in results:
             assert results[0]['run_file'] == result['run_file']
             for eval_measure in result.keys():
-                if eval_measure in set(['run_file', 'query']):
+                if eval_measure in {'run_file', 'query'}:
                     continue
                 measure_name = eval_result['task']['measure']
                 if 'rmse' not in measure_name:
