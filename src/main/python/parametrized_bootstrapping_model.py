@@ -274,16 +274,27 @@ class BootstrappingInducedByCondensedLists:
             raise ValueError('Expect the quantile between 0 (for 0%) and 1 (for 100%)')
         self.anchor_quantile = anchor_quantile
         self.original_measure = original_measure
+        self.minimum_items = 1
 
     def predict(self, X):
         ret = []
-        for (bootstrap_values, target_x) in X:
+        for x in X:
+            if len(x) == 2:
+                bootstrap_values, target_x = x
+            else:
+                bootstrap_values, target_x = x[0], 0.0
+
             if (type(target_x) is not float and type(target_x) is not int) or np.isnan(target_x):
                 raise ValueError(f'I can only work with numbers as targets. Got {x}.')
-            if type(bootstrap_values) is not list:
+            if type(bootstrap_values) is not list or not all(type(i) is float or type(i) is int for i in bootstrap_values):
                 raise ValueError(f'I can only work with lists as bootstrap_values. Got {bootstrap_values}.')
 
+            tmp_log = {'bootstrap_max_before': max(bootstrap_values), 'target_x': target_x}
             bootstrap_values = self.adjust_to_target(bootstrap_values, target_x)
+            tmp_log['bootstrap_max_after'] = max(min(max(bootstrap_values), 1), 0)
+            tmp_log['bootstrap_length'] = len(bootstrap_values)
+
+            #print(json.dumps(tmp_log))
 
             ret += [max(min(max(bootstrap_values), 1), 0)]
 
@@ -302,7 +313,7 @@ class BootstrappingInducedByCondensedLists:
                 count_below_target += 1
 
             quantile_at_target = count_below_target/(count_above_target + count_below_target)
-            if quantile_at_target < self.anchor_quantile:
+            if (count_above_target + count_below_target) > self.minimum_items and quantile_at_target < self.anchor_quantile:
                 break
             else:
                 ret += [i]
