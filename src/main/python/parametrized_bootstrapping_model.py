@@ -318,6 +318,11 @@ class BootstrappingInducedByCondensedLists:
             else:
                 ret += [i]
 
+        if max(ret) < target_x and  self.anchor_quantile <= 1.0:
+            # the distribution is expected to return values that contain the target_x, so we have to add
+            # it manually in case it is not extracted from the distribution
+            ret += [target_x]
+
         return ret
 
     def fit(self, x, y):
