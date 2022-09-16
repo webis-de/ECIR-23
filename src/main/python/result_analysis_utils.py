@@ -20,7 +20,11 @@ def load_cross_validation_results(input_data, depth, return_buffers=False):
         if i['query'] in ret[i['model']][i['run']]:
             raise ValueError('Duplicated stuff')
 
-        ret[i['model']][i['run']][i['query']] = {i['model'] + '-' + i['measures']['x']: i['y_prediction'], "run_file": i['run'], "query": i['query']}
+        if type(i['measures']['x']) is tuple or type(i['measures']['x']) is list:
+            measure_name = i['model'] + '-' + ('-'.join(i['measures']['x']))
+        else:
+            measure_name = i['model'] + '-' + i['measures']['x']
+        ret[i['model']][i['run']][i['query']] = {measure_name: i['y_prediction'], "run_file": i['run'], "query": i['query']}
         
     final_ret = []
     
