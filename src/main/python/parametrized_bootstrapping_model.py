@@ -2,6 +2,7 @@ from sklearn.metrics import mean_squared_error
 import numpy as np
 import pandas as pd
 from statistics import median
+from copy import deepcopy
 import json
 
 
@@ -264,3 +265,52 @@ class UpperBoundFixedBudgetBootstrappingModel(FixedBudgetBootstrappingModel):
 class LowerBoundFixedBudgetBootstrappingModel(FixedBudgetBootstrappingModel):
     def __init__(self, budget, search_space=(i for i in range(101))):
         super().__init__(budget, 'lower-bound', search_space)
+
+
+class BootstrappingInducedByCondensedLists:
+    def __init__(self, anchor_quantile, original_measure):
+        anchor_quantile = float(anchor_quantile)
+        if anchor_quantile < 0.0 or anchor_quantile > 1.0:
+            raise ValueError('Expect the quantile between 0 (for 0%) and 1 (for 100%)')
+        self.anchor_quantile = anchor_quantile
+        self.original_measure = original_measure
+
+    def predict(self, X):
+        ret = []
+        for (bootstrap_values, target_x) in X:
+            if (type(target_x) is not float and type(target_x) is not int) or np.isnan(target_x):
+                raise ValueError(f'I can only work with numbers as targets. Got {x}.')
+            if type(bootstrap_values) is not list:
+                raise ValueError(f'I can only work with lists as bootstrap_values. Got {bootstrap_values}.')
+
+            bootstrap_values = self.adjust_to_target(bootstrap_values, target_x)
+
+            ret += [max(min(max(bootstrap_values), 1), 0)]
+
+        return ret
+
+    def adjust_to_target(self, bootstrap_values, target_x):
+        bootstrap_values = sorted(deepcopy(bootstrap_values), reverse=False)
+        ret = []
+        count_below_target = 0
+        count_above_target = 0
+
+        for i in bootstrap_values:
+            if i > target_x:
+                count_above_target += 1
+            else:
+                count_below_target += 1
+
+            quantile_at_target = count_below_target/(count_above_target + count_below_target)
+            if quantile_at_target < self.anchor_quantile:
+                break
+            else:
+                ret += [i]
+
+        return ret
+
+    def fit(self, x, y):
+        pass
+
+    def __str__(self):
+        return f'bs-ci-{self.anchor_quantile}-{self.original_measure}'
