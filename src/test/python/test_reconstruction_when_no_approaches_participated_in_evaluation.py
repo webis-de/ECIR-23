@@ -1,5 +1,6 @@
 from unittest import TestCase
-from reconstruction_evaluation import AllApproachesDidNotParticipateInPoolingReconstructionEvaluation, DataConstruction
+from reconstruction_evaluation import AllApproachesDidNotParticipateInPoolingReconstructionEvaluation,\
+    DataConstruction, InterpolationDataConstruction
 
 
 class TestReconstructionEvaluation(TestCase):
@@ -105,14 +106,11 @@ class TestReconstructionEvaluation(TestCase):
              'PBS-R-RMSE': 0.999,
              'PBS-R-RMSE[1,3]': 1.111,
 
-             'PBS-R-RMSE[0.8,1]': 1.222,
-             'PBS-R-RMSE': 1.333,
-             'PBS-R-RMSE[1,3]': 1.444,
-
              'PBS-RMSE[0.8,1]': 1.555,
              'PBS-RMSE': 1.666,
              'PBS-RMSE[1,3]': 1.777
-             }, {'topic': '320',
+             },
+            {'topic': '320',
              'system': 'b',
              'ground_truth': 0.111,
              'Min-Residual': 0.222,
@@ -127,10 +125,6 @@ class TestReconstructionEvaluation(TestCase):
              'PBS-R-RMSE': 0.999,
              'PBS-R-RMSE[1,3]': 1.111,
 
-             'PBS-R-RMSE[0.8,1]': 1.222,
-             'PBS-R-RMSE': 1.333,
-             'PBS-R-RMSE[1,3]': 1.444,
-
              'PBS-RMSE[0.8,1]': 1.555,
              'PBS-RMSE': 1.666,
              'PBS-RMSE[1,3]': 1.777
@@ -142,6 +136,111 @@ class TestReconstructionEvaluation(TestCase):
             {'system': 'b', 'ground_truth': 0.111, 'prediction': {'lower': 0.222, 'actual': 0.333, 'upper': 0.444}},
         ]}
 
-        actual = DataConstruction('Min-Residual', 'Condensed', 'Max-Residual').construct_data_for_reconstruction_evaluation(input_data)
+        actual = DataConstruction('Min-Residual', 'Condensed', 'Max-Residual')\
+            .construct_data_for_reconstruction_evaluation(input_data)
+
+        self.assertEquals(expected, actual)
+
+    def test_extraction_of_traditional_with_interpolation_1_2(self):
+        input_data = {'320': [
+            {'topic': '320',
+             'system': 'a',
+             'ground_truth': 0.111,
+             'Min-Residual': 0.222,
+             'Condensed': 0.333,
+             'Max-Residual': 0.444,
+
+             'PBS-RP-RMSE[0.8,1]': 0.555,
+             'PBS-RP-RMSE': 0.666,
+             'PBS-RP-RMSE[1,3]': 0.777,
+
+             'PBS-R-RMSE[0.8,1]': 0.888,
+             'PBS-R-RMSE': 0.999,
+             'PBS-R-RMSE[1,3]': 1.111,
+
+             'PBS-RMSE[0.8,1]': 1.555,
+             'PBS-RMSE': 1.666,
+             'PBS-RMSE[1,3]': 1.777
+             },
+            {'topic': '320',
+             'system': 'b',
+             'ground_truth': 0.111,
+             'Min-Residual': 0.222,
+             'Condensed': 0.333,
+             'Max-Residual': 0.444,
+
+             'PBS-RP-RMSE[0.8,1]': 0.555,
+             'PBS-RP-RMSE': 0.666,
+             'PBS-RP-RMSE[1,3]': 0.777,
+
+             'PBS-R-RMSE[0.8,1]': 0.888,
+             'PBS-R-RMSE': 0.999,
+             'PBS-R-RMSE[1,3]': 1.111,
+
+             'PBS-RMSE[0.8,1]': 1.555,
+             'PBS-RMSE': 1.666,
+             'PBS-RMSE[1,3]': 1.777
+             }
+        ]}
+
+        expected = {'320': [
+            {'system': 'a', 'ground_truth': 0.111, 'prediction': {'lower': 0.222, 'actual': 0.3552, 'upper': 0.3552}},
+            {'system': 'b', 'ground_truth': 0.111, 'prediction': {'lower': 0.222, 'actual': 0.3552, 'upper': 0.3552}},
+        ]}
+
+        actual = InterpolationDataConstruction('Min-Residual', 'Condensed', 'Max-Residual', 1.2)\
+            .construct_data_for_reconstruction_evaluation(input_data)
+
+        self.assertEquals(expected, actual)
+
+    def test_extraction_of_traditional_with_interpolation_0_8(self):
+        input_data = {'320': [
+            {'topic': '320',
+             'system': 'a',
+             'ground_truth': 0.111,
+             'Min-Residual': 0.222,
+             'Condensed': 0.333,
+             'Max-Residual': 0.444,
+
+             'PBS-RP-RMSE[0.8,1]': 0.555,
+             'PBS-RP-RMSE': 0.666,
+             'PBS-RP-RMSE[1,3]': 0.777,
+
+             'PBS-R-RMSE[0.8,1]': 0.888,
+             'PBS-R-RMSE': 0.999,
+             'PBS-R-RMSE[1,3]': 1.111,
+
+             'PBS-RMSE[0.8,1]': 1.555,
+             'PBS-RMSE': 1.666,
+             'PBS-RMSE[1,3]': 1.777
+             },
+            {'topic': '320',
+             'system': 'b',
+             'ground_truth': 0.111,
+             'Min-Residual': 0.222,
+             'Condensed': 0.333,
+             'Max-Residual': 0.444,
+
+             'PBS-RP-RMSE[0.8,1]': 0.555,
+             'PBS-RP-RMSE': 0.666,
+             'PBS-RP-RMSE[1,3]': 0.777,
+
+             'PBS-R-RMSE[0.8,1]': 0.888,
+             'PBS-R-RMSE': 0.999,
+             'PBS-R-RMSE[1,3]': 1.111,
+
+             'PBS-RMSE[0.8,1]': 1.555,
+             'PBS-RMSE': 1.666,
+             'PBS-RMSE[1,3]': 1.777
+             }
+        ]}
+
+        expected = {'320': [
+            {'system': 'a', 'ground_truth': 0.111, 'prediction': {'lower': 0.222, 'actual': 0.3108, 'upper': 0.3108}},
+            {'system': 'b', 'ground_truth': 0.111, 'prediction': {'lower': 0.222, 'actual': 0.3108, 'upper': 0.3108}},
+        ]}
+
+        actual = InterpolationDataConstruction('Min-Residual', 'Condensed', 'Max-Residual', 0.8)\
+            .construct_data_for_reconstruction_evaluation(input_data)
 
         self.assertEquals(expected, actual)
