@@ -25,6 +25,40 @@ class DataConstruction:
         }
 
 
+class InterpolationDataConstruction:
+    def __init__(self, lower, actual, upper, interpolation):
+        self.lower = lower
+        self.actual = actual
+        self.upper = upper
+        self.interpolation = interpolation - 1.0
+
+    def construct_data_for_reconstruction_evaluation(self, data_per_row):
+        ret = {}
+        for topic in data_per_row.keys():
+            assert topic not in ret
+
+            ret[topic] = [self.transform(i) for i in data_per_row[topic]]
+
+        return ret
+
+    def transform(self, i):
+        interpolation_start = min(i[self.actual], i[self.upper])
+        interpolation_upper = max(i[self.actual], i[self.upper])
+
+        if self.interpolation >= 0:
+            upper = interpolation_start + ((interpolation_upper - interpolation_start) * self.interpolation)
+        else:
+            interpolation_start = max(i[self.actual], i[self.lower])
+            interpolation_lower = min(i[self.actual], i[self.lower])
+            upper = interpolation_start + ((interpolation_start - interpolation_lower) * self.interpolation)
+
+        return {
+            'system': i['system'],
+            'ground_truth': i['ground_truth'],
+            'prediction': {'lower': i[self.lower], 'actual': upper, 'upper': upper}
+        }
+
+
 def to_ground_truth(i):
     return i['ground_truth']
 

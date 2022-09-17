@@ -286,7 +286,9 @@ class BootstrappingInducedByCondensedLists:
 
             if (type(target_x) is not float and type(target_x) is not int) or np.isnan(target_x):
                 raise ValueError(f'I can only work with numbers as targets. Got {x}.')
-            if type(bootstrap_values) is not list or not all(type(i) is float or type(i) is int for i in bootstrap_values):
+            if type(bootstrap_values) is not list:
+                raise ValueError(f'I can only work with lists as bootstrap_values. Got {bootstrap_values}.')
+            if not all(type(i) is float or type(i) is int for i in bootstrap_values):
                 raise ValueError(f'I can only work with lists as bootstrap_values. Got {bootstrap_values}.')
 
             tmp_log = {'bootstrap_max_before': max(bootstrap_values), 'target_x': target_x}
@@ -294,7 +296,7 @@ class BootstrappingInducedByCondensedLists:
             tmp_log['bootstrap_max_after'] = max(min(max(bootstrap_values), 1), 0)
             tmp_log['bootstrap_length'] = len(bootstrap_values)
 
-            #print(json.dumps(tmp_log))
+            # print(json.dumps(tmp_log))
 
             ret += [max(min(max(bootstrap_values), 1), 0)]
 
@@ -318,7 +320,7 @@ class BootstrappingInducedByCondensedLists:
             else:
                 ret += [i]
 
-        if max(ret) < target_x and  self.anchor_quantile <= 1.0:
+        if max(ret) < target_x and self.anchor_quantile <= 1.0:
             # the distribution is expected to return values that contain the target_x, so we have to add
             # it manually in case it is not extracted from the distribution
             ret += [target_x]
