@@ -157,9 +157,8 @@ def run_cross_validation(task):
         working_dir=task['working_directory'],
     )
 
-    for m in ['bs-p-1000-ndcg@10-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10',
-              'bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10',
-              'bs-run-and-pool-dependent2-1000-ndcg@10-ndcg@10']:
+    for m in ['bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10',
+              'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10']:
         cross_validation_experiment(
             trec=task['trec'],
             input_measure=[(m, 'condensed-ndcg@10')],

@@ -47,7 +47,7 @@ class ProbabilityEstimator:
         return {rl: ret[rl] for rl in rel_levels}
 
     def smoothing(self):
-        return 0.0001
+        return 0.000001
 
     def estimate_single_probability(self, run, qrels, rel_level, k=None):
         pass
@@ -66,7 +66,16 @@ class RunIndependentCountProbabilityEstimator(ProbabilityEstimator):
         return max(len(qrels[qrels["rel"] == relevance_level])/len(qrels), super().smoothing())
 
 
-class RunAndPoolDependentProbabilityEstimator(ProbabilityEstimator):
+class RunAndPoolAvgProbabilityEstimator(ProbabilityEstimator):
+    def estimate_single_probability(self, run, qrels, relevance_level, k=None):
+        run_probability = CountProbabilityEstimator().estimate_single_probability(run, qrels, relevance_level, k)
+        pool_probability = RunIndependentCountProbabilityEstimator()\
+            .estimate_single_probability(run, qrels, relevance_level, k)
+
+        return (run_probability+pool_probability)/2.0
+
+
+class DeprecatedRunAndPoolDependentProbabilityEstimator(ProbabilityEstimator):
     def estimate_probabilities(self, run, qrels):
         if type(run) == TrecRun:
             return self.estimate_probabilities(run.run_data, qrels)

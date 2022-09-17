@@ -2,7 +2,8 @@ from trectools import TrecRun, TrecQrel, TrecEval
 import pandas as pd
 from run_file_processing import normalize_run
 from copy import deepcopy
-from probability_estimation import CountProbabilityEstimator, RunIndependentCountProbabilityEstimator, PoissonEstimator, RunAndPoolDependentProbabilityEstimator
+from probability_estimation import CountProbabilityEstimator, RunIndependentCountProbabilityEstimator, \
+    RunAndPoolAvgProbabilityEstimator
 from bootstrap_util import BootstrappEval, FullyIndependentBootstrappingStrategey
 from pool_bootstrap_util import PoolAndRunIndependentBootstrappingStrategey, ProbabilityEstimatedBootstrappingStrategey
 
@@ -101,18 +102,12 @@ def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
         
         max_eval = __eval_rbp(max_eval.run, max_eval.qrels, depth, removeUnjudged=False)
         
-        min_eval =  __eval_rbp(min_qrels.run, min_qrels.qrels, depth, removeUnjudged=False)
+        min_eval = __eval_rbp(min_qrels.run, min_qrels.qrels, depth, removeUnjudged=False)
         
         min_eval = min_eval.rename(columns={'RBP@' + str(depth): 'MIN-RBP@' + str(depth)}, errors='raise')
         max_eval = max_eval.rename(columns={'RBP@' + str(depth): 'MAX-RBP@' + str(depth)}, errors='raise')
         
         ret = min_eval.join(max_eval)
-    elif measure.startswith('bs-1000-ndcg@'):
-        bs_eval = BootstrappEval(f'ndcg@{depth}', FullyIndependentBootstrappingStrategey(trec_eval.qrels))
-        ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
-    elif measure.startswith('bs-p-1000-ndcg@10'):
-        bs_eval = BootstrappEval(f'ndcg@{depth}', PoolAndRunIndependentBootstrappingStrategey(trec_eval.qrels))
-        ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
     elif measure.startswith('bs-pool-dependent-1000-ndcg@10'):
         bs_strategy = ProbabilityEstimatedBootstrappingStrategey(trec_eval.qrels, CountProbabilityEstimator())
         bs_eval = BootstrappEval(f'ndcg@{depth}', bs_strategy)
@@ -126,20 +121,12 @@ def __evaluate_trec_eval_on_pool(trec_eval,  measure, run_file_name):
     elif measure.startswith('bs-run-and-pool-dependent-1000-ndcg@10'):
         bs_strategy = ProbabilityEstimatedBootstrappingStrategey(
             trec_eval.qrels,
-            PoissonEstimator(to_add=1, p_add_from_pool_given_unjudged=0.05, lower_p=0.025, upper_p=0.075)
+            RunAndPoolAvgProbabilityEstimator()
         )
         bs_eval = BootstrappEval(f'ndcg@{depth}', bs_strategy)
         ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
-    elif measure.startswith('bs-run-and-pool-dependent2-1000-ndcg@10'):
-        bs_strategy = ProbabilityEstimatedBootstrappingStrategey(
-            trec_eval.qrels,
-            RunAndPoolDependentProbabilityEstimator()
-        )
-        bs_eval = BootstrappEval(f'ndcg@{depth}', bs_strategy)
-        ret = bs_eval.bootstrap(trec_eval.run, trec_eval.qrels, f'ndcg@{depth}', repeat=1000, seed=None)
-    
     else:
-        raise ValueError('Can not handle measure "' + measure +'".')
+        raise ValueError('Can not handle measure "' + measure + '".')
 
     return list(normalize_eval_output(ret, run_file_name))
 
@@ -234,4 +221,3 @@ def __adjust_qrels_to_pool(qrels, pool):
     ret.qrels_data = pd.DataFrame(new_qrels_data)
     
     return ret
-    

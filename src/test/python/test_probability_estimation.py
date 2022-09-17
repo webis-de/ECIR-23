@@ -2,7 +2,8 @@ from unittest import TestCase
 from trectools import TrecRun, TrecQrel
 import pandas as pd
 from probability_estimation import PoissonEstimator, CountProbabilityEstimator, \
-    RunIndependentCountProbabilityEstimator, RunAndPoolDependentProbabilityEstimator
+    RunIndependentCountProbabilityEstimator, DeprecatedRunAndPoolDependentProbabilityEstimator, \
+    RunAndPoolAvgProbabilityEstimator
 
 
 class TestProbabilityEstimation(TestCase):
@@ -78,7 +79,7 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        estimator = RunAndPoolDependentProbabilityEstimator()
+        estimator = DeprecatedRunAndPoolDependentProbabilityEstimator()
         actual = estimator.estimate_probabilities(run, qrels)
         print(actual)
         self.assertAlmostEqual(1.0, actual[0], places=4)
@@ -106,13 +107,62 @@ class TestProbabilityEstimation(TestCase):
             {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
         ])
 
-        estimator = RunAndPoolDependentProbabilityEstimator()
+        estimator = DeprecatedRunAndPoolDependentProbabilityEstimator()
         actual = estimator.estimate_probabilities(run, qrels)
         print(actual)
         self.assertAlmostEqual(0.88888888, actual[0], places=4)
         self.assertAlmostEqual(0.11111111, actual[1], places=4)
         self.assertAlmostEqual(0.0000, actual[2], places=4)
         self.assertAlmostEqual(0.0000, actual[3], places=4)
+
+    def test_probability_estimation_for_only_irrelevant_docs_for_avg_run_and_pool_dependent(self):
+        run = TrecRun()
+        run.run_data = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
+        ])
+        qrels = TrecQrel()
+        qrels.qrels_data = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
+        ])
+
+        estimator = RunAndPoolAvgProbabilityEstimator()
+        actual = estimator.estimate_probabilities(run, qrels)
+        print(actual)
+        self.assertAlmostEqual(1.0, actual[0], places=4)
+        self.assertAlmostEqual(0.0000, actual[1], places=4)
+        self.assertAlmostEqual(0.0000, actual[2], places=4)
+        self.assertAlmostEqual(0.0000, actual[3], places=4)
+
+    def test_probability_estimation_for_20_percent_relevant_docs_k_1_for_avg_run_and_pool_dependent(self):
+        run = TrecRun()
+        run.run_data = pd.DataFrame([
+            {'query': '301', 'q0': 'Q0', 'docid': 'd1', 'rank': 0, 'score': 3000, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd2', 'rank': 1, 'score': 2999, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd3', 'rank': 2, 'score': 2998, 'system': 'a'},
+            {'query': '301', 'q0': 'Q0', 'docid': 'd4', 'rank': 3, 'score': 2998, 'system': 'a'},
+        ])
+        qrels = TrecQrel()
+        qrels.qrels_data = pd.DataFrame([
+            {'query': '301', 'q0': 0, 'docid': 'd1', 'rel': 0},
+            {'query': '301', 'q0': 0, 'docid': 'd4', 'rel': 1},
+            {'query': '301', 'q0': 0, 'docid': 'd2', 'rel': 0},
+
+            # Some noise
+            {'query': '302', 'q0': 0, 'docid': 'doc-0', 'rel': 0},
+            {'query': '302', 'q0': 0, 'docid': 'doc-1', 'rel': 1},
+            {'query': '302', 'q0': 0, 'docid': 'doc-2', 'rel': 2},
+        ])
+
+        estimator = RunAndPoolAvgProbabilityEstimator()
+        actual = estimator.estimate_probabilities(run, qrels)
+        print(actual)
+        self.assertAlmostEqual(0.58333, actual[0], places=4)
+        self.assertAlmostEqual(0.33333, actual[1], places=4)
+        self.assertAlmostEqual(0.08337, actual[2], places=4)
+        self.assertAlmostEqual(0.00000, actual[3], places=4)
 
     def test_probability_estimation_for_only_irrelevant_docs_with_counting(self):
         run = TrecRun()
@@ -134,10 +184,10 @@ class TestProbabilityEstimation(TestCase):
         actual = estimator.estimate_probabilities(run, qrels)
 
         print(actual)
-        self.assertAlmostEqual(0.9997, actual[0], places=4)
-        self.assertAlmostEqual(0.0001, actual[1], places=4)
-        self.assertAlmostEqual(0.0001, actual[2], places=4)
-        self.assertAlmostEqual(0.0001, actual[3], places=4)
+        self.assertAlmostEqual(0.99999, actual[0], places=4)
+        self.assertAlmostEqual(0.00000, actual[1], places=4)
+        self.assertAlmostEqual(0.00000, actual[2], places=4)
+        self.assertAlmostEqual(0.00000, actual[3], places=4)
 
     def test_probability_estimation_for_33_percent_relevant_docs_with_counting(self):
         run = TrecRun()
@@ -161,10 +211,10 @@ class TestProbabilityEstimation(TestCase):
 
         estimator = CountProbabilityEstimator()
         actual = estimator.estimate_probabilities(run, qrels)
-        self.assertAlmostEqual(0.66653, actual[0], places=4)
-        self.assertAlmostEqual(0.33326, actual[1], places=4)
-        self.assertAlmostEqual(0.0001, actual[2], places=4)
-        self.assertAlmostEqual(0.0001, actual[3], places=4)
+        self.assertAlmostEqual(0.66666, actual[0], places=4)
+        self.assertAlmostEqual(0.33333, actual[1], places=4)
+        self.assertAlmostEqual(0.00000, actual[2], places=4)
+        self.assertAlmostEqual(0.00000, actual[3], places=4)
 
     def test_probability_estimation_for_run_independent_evaluation_with_counting(self):
         run = TrecRun()
