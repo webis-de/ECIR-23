@@ -14,6 +14,10 @@ class DataConstruction:
         return ret
 
     def transform(self, i):
+        for k in [self.upper, self.actual, self.lower]:
+            if k not in i:
+                raise ValueError(f'I cand find the expected key {k}. Available are: {i.keys()}.')
+
         return {
             'system': i['system'],
             'ground_truth': i['ground_truth'],
