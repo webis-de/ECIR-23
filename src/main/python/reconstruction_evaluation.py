@@ -370,12 +370,12 @@ def data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_un
     return ret
 
 
-def load_df_reconstruction(trec, num_runs_to_keep=100000, failsave=True):
+def load_df_reconstruction(trec, num_runs_to_keep=100000, failsave=True, min_unjudged=0, max_unjudged=None):
     runs_to_keep = pd.read_json('../resources/processed/ndcg-at-10-effectiveness.jsonl', lines=True)
     runs_to_keep = runs_to_keep[runs_to_keep['position'] < num_runs_to_keep]
     runs_to_keep = set(runs_to_keep['run'].unique())
     df = load_df(trec)
-    d = data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep)
+    d = data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_unjudged=min_unjudged, max_unjudged=max_unjudged)
     reconstruction_approaches = {
         'Residuals': DataConstruction('Min-Residual', 'Condensed', 'Max-Residual'),
         'MinResiduals': DataConstruction('Min-Residual', 'Min-Residual', 'Min-Residual'),
