@@ -281,7 +281,7 @@ def report_for_row(df_row, measure, depth):
                  ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
                  ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
         for m in ['75', '90', '95']:
-            measures += [(f'{k}-{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'pbs-{m}-{v}-{v}'))]
+            measures += [(f'{k}-{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'pbs-{m}-{v}-{v}-pbs-{m}-{v}-{v}'))]
 
     for i in ['upper-bound-0.01', 'upper-bound-0.05', 'lower-bound-0.01', 'lower-bound-0.05']:
         measures += [(f'gsd-{i}-condensed-{measure}@{depth}', (f'depth-{depth}-incomplete',
