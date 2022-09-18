@@ -415,6 +415,18 @@ def load_df_reconstruction(trec, num_runs_to_keep=100000, failsave=True, min_unj
         'PBS-R-ML': DataConstruction('PBS-R-ML', 'PBS-R-ML', 'PBS-R-ML'),
         'PBS-P-ML': DataConstruction('PBS-P-ML', 'PBS-P-ML', 'PBS-P-ML'),
 
+        'Min-PBS-R-75': DataConstruction('Min-Residual', 'PBS-R-75', 'PBS-R-75'),
+        'Min-PBS-P-75': DataConstruction('Min-Residual', 'PBS-P-75', 'PBS-P-75'),
+        'Min-PBS-RP-75': DataConstruction('Min-Residual', 'PBS-RP-75', 'PBS-RP-75'),
+
+        'Min-PBS-R-90': DataConstruction('Min-Residual', 'PBS-R-90', 'PBS-R-90'),
+        'Min-PBS-P-90': DataConstruction('Min-Residual', 'PBS-P-90', 'PBS-P-90'),
+        'Min-PBS-RP-90': DataConstruction('Min-Residual', 'PBS-RP-90', 'PBS-RP-90'),
+
+        'Min-PBS-R-95': DataConstruction('Min-Residual', 'PBS-R-95', 'PBS-R-95'),
+        'Min-PBS-P-95': DataConstruction('Min-Residual', 'PBS-P-95', 'PBS-P-95'),
+        'Min-PBS-RP-95': DataConstruction('Min-Residual', 'PBS-RP-95', 'PBS-RP-95'),
+
         'Min-PBS-RP-ML': DataConstruction('Min-Residual', 'PBS-RP-ML', 'PBS-RP-ML'),
         'Min-PBS-R-ML': DataConstruction('Min-Residual', 'PBS-R-ML', 'PBS-R-ML'),
         'Min-PBS-P-ML': DataConstruction('Min-Residual', 'PBS-P-ML', 'PBS-P-ML'),
