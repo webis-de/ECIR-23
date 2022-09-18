@@ -345,11 +345,11 @@ class BootstrappingBySelectingMostLikelyDataPoint:
 
     def predict(self, x):
         ret = []
-        if type(x) is not list or type(x) is not tuple:
+        if type(x) is not list and type(x) is not tuple:
             raise ValueError(f'Invalid input. Got {x}')
 
         for l in x:
-            if type(l) is not list or type(l) is not tuple or not(all(type(i) is int or type(i) is float for i in l)):
+            if type(l) is not list and type(l) is not tuple and not(all(type(i) is int or type(i) is float for i in l)):
                 raise ValueError(f'Invalid input. Got {l}')
 
             ret += [self.select_element(l)]
