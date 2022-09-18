@@ -1,3 +1,10 @@
+import pandas as pd
+from tqdm import tqdm
+from result_analysis_utils import load_evaluations, load_cross_validation_results
+import json
+from glob import glob
+
+
 class DataConstruction:
     def __init__(self, lower, actual, upper):
         self.lower = lower
@@ -193,3 +200,246 @@ class AllApproachesDidNotParticipateInPoolingReconstructionEvaluation:
                     ret.add((s1['system'], s2['system']))
 
         return ret
+
+
+def load_df(trec):
+    eval_predictions = glob(f'../resources/eval/trec-system-runs/{trec}/*.jsonl')
+
+    # eval_predictions += list(load_cross_validation_results(open(f'../resources/processed/cross-validation-results/{trec}/bs-p-1000-ndcg@10-ndcg@10-results.jsonl'), depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-pool-dependent-1000-ndcg@10-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+    # eval_predictions += list(load_cross_validation_results(open(f'../resources/processed/cross-validation-results/{trec}/bs-run-and-pool-dependent2-1000-ndcg@10-ndcg@10-results.jsonl'), depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-run-dependent-1000-ndcg@10-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+
+    # eval_predictions += list(load_cross_validation_results(open(f'../resources/processed/cross-validation-results/{trec}/bs-p-1000-ndcg@10-ndcg@10-condensed-ndcg@10-results.jsonl'), depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-pool-dependent-1000-ndcg@10-ndcg@10-condensed-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10-condensed-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+    # eval_predictions += list(load_cross_validation_results(open(f'../resources/processed/cross-validation-results/{trec}/bs-run-and-pool-dependent2-1000-ndcg@10-ndcg@10-condensed-ndcg@10-results.jsonl'), depth=10, return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(open(
+        f'../resources/processed/cross-validation-results/{trec}/bs-run-dependent-1000-ndcg@10-ndcg@10-condensed-ndcg@10-results.jsonl'),
+                                                           depth=10, return_buffers=True))
+
+    eval_predictions += list(load_cross_validation_results(
+        open(f'../resources/processed/cross-validation-results/{trec}/condensed-ndcg@10-results.jsonl'), depth=10,
+        return_buffers=True))
+    eval_predictions += list(load_cross_validation_results(
+        open(f'../resources/processed/cross-validation-results/{trec}/ndcg@10-results.jsonl'), depth=10,
+        return_buffers=True))
+
+    return load_evaluations(tqdm(eval_predictions))
+
+
+def report_for_row(df_row, measure, depth):
+    tmp = {'run': df_row['run'].split('/')[-1].replace('input.', '').replace('.gz', '')}
+    measures = [
+        ('unjudged', (f'depth-{depth}-incomplete', f'unjudged@{depth}')),
+        (f'ground-truth-{measure}@{depth}', (f'depth-{depth}-complete', f'ndcg@{depth}')),
+        (f'min-residual-{measure}@{depth}', (f'depth-{depth}-incomplete', f'residual-{measure}@{depth}-min')),
+        (f'condensed-{measure}@{depth}', (f'depth-{depth}-incomplete', f'condensed-{measure}@{depth}')),
+        (f'max-residual-{measure}@{depth}', (f'depth-{depth}-incomplete', f'residual-{measure}@{depth}-max')),
+        (f'always-1', (f'depth-{depth}-incomplete', 'always-1')),
+        (f'always-0', (f'depth-{depth}-incomplete', 'always-0')),
+    ]
+
+    for k, v in [('PBS-P', f'bs-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
+        for m in ['']:
+            measures += [(f'{k}-RMSE{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'pbs-rmse{m}-{v}'))]
+
+    for k, v in [('PBS-P', f'bs-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
+        for m in ['0.8', '0.9', '0.95', '0.99']:
+            internal_name = f'bs-ci-{m}-{v}-{v}-condensed-{measure}@{depth}'
+            measures += [
+                (f'{k}-CL-{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'{internal_name}-{internal_name}'))]
+
+    for k, v in [('PBS-P', f'bs-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
+        for m in ['-upper-bound-0.01', '-upper-bound-0.05', '-lower-bound-0.01', '-lower-bound-0.05']:
+            part_name = f'pbs{m}-{v}'
+            measures += [(f'{k}-RMSE{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'{part_name}-{part_name}'))]
+
+    for k, v in [('PBS-P', f'bs-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
+        measures += [(f'{k}-ML-{measure}@{depth}', (f'depth-{depth}-incomplete', f'bs-ml-{v}-{v}-bs-ml-{v}-{v}'))]
+
+    for i in ['upper-bound-0.01', 'upper-bound-0.05', 'lower-bound-0.01', 'lower-bound-0.05']:
+        measures += [(f'gsd-{i}-condensed-{measure}@{depth}', (f'depth-{depth}-incomplete',
+                                                               f'gsd-{i}-condensed-{measure}@{depth}-condensed-{measure}@{depth}-gsd-{i}-condensed-{measure}@{depth}-condensed-{measure}@{depth}')),
+                     (f'gsd-{i}-{measure}@{depth}', (f'depth-{depth}-incomplete',
+                                                     f'gsd-{i}-{measure}@{depth}-{measure}@{depth}-gsd-{i}-{measure}@{depth}-{measure}@{depth}'))]
+
+    for display_name, m in measures:
+        try:
+            tmp[display_name] = json.loads(df_row[m])
+        except:
+            raise ValueError(f'Can not handle "{m}". Got {df_row.keys()}')
+
+    ret = []
+
+    for topic in tmp[f'ground-truth-{measure}@{depth}']:
+        entry = {'run': tmp['run'], 'topic': topic}
+        for k, v in tmp.items():
+            if k in ['run']:
+                continue
+
+            if topic in v:
+                entry[k] = v[topic]
+        ret += [entry]
+
+    return ret
+
+
+def create_aggregated_df(df, measure, depth, loc, runs_to_keep):
+    if df.iloc[loc]['run'] not in runs_to_keep:
+        return None
+    ret = pd.DataFrame([dict(i) for i in report_for_row(df.iloc[loc], measure, depth)])
+    ret = ret.sort_values(f'ground-truth-{measure}@{depth}', ascending=False).reset_index()
+    del ret['index']
+    return ret
+
+
+def data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_unjudged=0, max_unjudged=None):
+    ret = {}
+    for run in tqdm(range(len(df['run'].unique()))):
+        try:
+            tmp = create_aggregated_df(df, 'ndcg', 10, run, runs_to_keep)
+            if tmp is None:
+                continue
+        except Exception as e:
+            if not failsave:
+                raise e
+
+            continue
+
+        if min_unjudged is not None:
+            tmp = tmp[tmp['unjudged'] > min_unjudged].dropna()
+        if max_unjudged is not None:
+            tmp = tmp[tmp['unjudged'] < max_unjudged].dropna()
+
+        if len(tmp) <= 1:
+            continue
+
+        measures_to_report = [('Condensed', 'condensed-ndcg@10'), ('Min-Residual', 'min-residual-ndcg@10'),
+                              ('Max-Residual', 'max-residual-ndcg@10'), ('Always 1', 'always-1'),
+                              ('Always 0', 'always-0'),
+                              ]
+
+        for i in ['', '-upper-bound-0.01', '-upper-bound-0.05', '-lower-bound-0.01', '-lower-bound-0.05']:
+            for p in ['P-', 'R-', 'RP-']:
+                measures_to_report += [(f'PBS-{p}RMSE{i}', f'PBS-{p}RMSE{i}-ndcg@10')]
+
+        for p in ['P', 'R', 'RP']:
+            measures_to_report += [(f'PBS-{p}-ML', f'PBS-{p}-ML-ndcg@10')]
+            for m in ['0.8', '0.9', '0.95', '0.99']:
+                measures_to_report += [(f'PBS-{p}-CL-{m}', f'PBS-{p}-CL-{m}-ndcg@10')]
+
+        for i in ['upper-bound-0.01', 'upper-bound-0.05', 'lower-bound-0.01', 'lower-bound-0.05']:
+            measures_to_report += [(f'GSD-Condensed-{i}', f'gsd-{i}-condensed-ndcg@10'),
+                                   (f'GSD-{i}', f'gsd-{i}-ndcg@10')]
+
+        for _, i in tmp.iterrows():
+            to_add = {
+                'topic': i['topic'],
+                'system': i['run'],
+                'ground_truth': i['ground-truth-ndcg@10']
+            }
+
+            for k, v in measures_to_report:
+                to_add[k] = i[v]
+
+            if i['topic'] not in ret:
+                ret[i['topic']] = []
+
+            ret[i['topic']] += [to_add]
+
+    return ret
+
+
+def load_df_reconstruction(trec, num_runs_to_keep=100000, failsave=True):
+    runs_to_keep = pd.read_json('../resources/processed/ndcg-at-10-effectiveness.jsonl', lines=True)
+    runs_to_keep = runs_to_keep[runs_to_keep['position'] < num_runs_to_keep]
+    runs_to_keep = set(runs_to_keep['run'].unique())
+    df = load_df(trec)
+    d = data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep)
+    reconstruction_approaches = {
+        'Residuals': DataConstruction('Min-Residual', 'Condensed', 'Max-Residual'),
+        'MinResiduals': DataConstruction('Min-Residual', 'Min-Residual', 'Min-Residual'),
+        'Condensed': DataConstruction('Condensed', 'Condensed', 'Condensed'),
+        'Min-Condensed': DataConstruction('Min-Residual', 'Condensed', 'Condensed'),
+
+        'PBS-P-CL-0.80': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-P-CL-0.8'),
+        'PBS-P-CL-0.90': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-P-CL-0.9'),
+        'PBS-P-CL-0.95': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-P-CL-0.95'),
+        'PBS-P-CL-0.99': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-P-CL-0.99'),
+
+        'PBS-R-CL-0.80': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-R-CL-0.8'),
+        'PBS-R-CL-0.90': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-R-CL-0.9'),
+        'PBS-R-CL-0.95': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-R-CL-0.95'),
+        'PBS-R-CL-0.99': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-R-CL-0.99'),
+
+        'PBS-RP-CL-0.80': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-RP-CL-0.8'),
+        'PBS-RP-CL-0.90': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-RP-CL-0.9'),
+        'PBS-RP-CL-0.95': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-RP-CL-0.95'),
+        'PBS-RP-CL-0.99': DataConstruction('Min-Residual', 'Min-Residual', 'PBS-RP-CL-0.99'),
+
+        'PBS-RP-RMSE': DataConstruction('PBS-RP-RMSE', 'PBS-RP-RMSE', 'PBS-RP-RMSE'),
+        'PBS-R-RMSE': DataConstruction('PBS-R-RMSE', 'PBS-R-RMSE', 'PBS-R-RMSE'),
+        'PBS-P-RMSE': DataConstruction('PBS-P-RMSE', 'PBS-P-RMSE', 'PBS-P-RMSE'),
+
+        'PBS-RP-ML': DataConstruction('PBS-RP-ML', 'PBS-RP-ML', 'PBS-RP-ML'),
+        'PBS-R-ML': DataConstruction('PBS-R-ML', 'PBS-R-ML', 'PBS-R-ML'),
+        'PBS-P-ML': DataConstruction('PBS-P-ML', 'PBS-P-ML', 'PBS-P-ML'),
+
+        'Min-PBS-RP-ML': DataConstruction('Min-Residual', 'PBS-RP-ML', 'PBS-RP-ML'),
+        'Min-PBS-R-ML': DataConstruction('Min-Residual', 'PBS-R-ML', 'PBS-R-ML'),
+        'Min-PBS-P-ML': DataConstruction('Min-Residual', 'PBS-P-ML', 'PBS-P-ML'),
+
+        'PBS-RP-0.01': DataConstruction('PBS-RP-RMSE-lower-bound-0.01', 'PBS-RP-RMSE', 'PBS-RP-RMSE-upper-bound-0.01'),
+        'PBS-RP-0.05': DataConstruction('PBS-RP-RMSE-lower-bound-0.05', 'PBS-RP-RMSE', 'PBS-RP-RMSE-upper-bound-0.05'),
+
+        'PBS-R-0.01': DataConstruction('PBS-R-RMSE-lower-bound-0.01', 'PBS-R-RMSE', 'PBS-R-RMSE-upper-bound-0.01'),
+        'PBS-R-0.05': DataConstruction('PBS-R-RMSE-lower-bound-0.05', 'PBS-R-RMSE', 'PBS-R-RMSE-upper-bound-0.05'),
+
+        'PBS-P-0.01': DataConstruction('PBS-P-RMSE-lower-bound-0.01', 'PBS-P-RMSE', 'PBS-P-RMSE-upper-bound-0.01'),
+        'PBS-P-0.05': DataConstruction('PBS-P-RMSE-lower-bound-0.05', 'PBS-P-RMSE', 'PBS-P-RMSE-upper-bound-0.05'),
+
+        'Interp-0.75-min-cond-max': InterpolationDataConstruction('Min-Residual', 'Condensed', 'Max-Residual', 0.75),
+        'Interp-1.05-min-cond-max': InterpolationDataConstruction('Min-Residual', 'Condensed', 'Max-Residual', 1.05),
+        'Interp-1.2-min-cond-max': InterpolationDataConstruction('Min-Residual', 'Condensed', 'Max-Residual', 1.2),
+    }
+
+    df_reconstruction = []
+
+    reconstruction_eval = ReconstructionEvaluation()
+
+    for approach_name, approach in reconstruction_approaches.items():
+        for topic, topic_data in approach.construct_data_for_reconstruction_evaluation(d).items():
+            df_reconstruction += [{
+                'approach': approach_name,
+                'topic': topic,
+                'precision': reconstruction_eval.precision(topic_data),
+                'recall': reconstruction_eval.recall(topic_data),
+                'topic_data': topic_data
+            }]
+
+    df_reconstruction = pd.DataFrame(df_reconstruction)
+    df_reconstruction['f1'] = df_reconstruction.apply(
+        lambda i: 0 if (i['precision'] + i['recall']) == 0 else 2 * (i['precision'] * i['recall']) / (
+                    i['precision'] + i['recall']), axis=1)
+
+    return df_reconstruction
