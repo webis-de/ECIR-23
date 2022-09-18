@@ -223,6 +223,8 @@ def __rename_measure(m):
         return m.lower()
     if m.lower().startswith('bs-ml-'):
         return m.lower()
+    if m.lower().startswith('pbs-'):
+        return m.lower()
 
 
 def __process_row(df_row):
@@ -243,7 +245,8 @@ def __process_row(df_row):
         ret[k] = v
     
     if len(ret) == 0:
-        raise ValueError('This can not happen. Worked on ' + json.dumps(df_row))
+        raise ValueError('This can not happen. I should extract data from an entry but found nothint to extract in '
+                         + json.dumps(df_row))
     
     return ret
 
