@@ -220,6 +220,19 @@ class ParametrizedBootstrappingModel:
                            'quantile': self.quantile, 'search_space_size': len(self.search_space)})
 
 
+class FixedQuantileBootstrappingModel(ParametrizedBootstrappingModel):
+    def __init__(self, original_measure, quantile):
+        super().__init__('not-existent')
+        self.original_measure = original_measure
+        self.quantile = quantile
+
+    def fit(self, x, y):
+        pass
+
+    def __str__(self):
+        return f'pbs-{self.quantile}-{self.original_measure}'
+
+
 class FixedBudgetBootstrappingModel(ParametrizedBootstrappingModel):
     def __init__(self, budget, budget_type, search_space=(i for i in range(101))):
         if budget_type == 'upper-bound':
