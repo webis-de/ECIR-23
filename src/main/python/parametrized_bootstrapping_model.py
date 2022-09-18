@@ -332,3 +332,81 @@ class BootstrappingInducedByCondensedLists:
 
     def __str__(self):
         return f'bs-ci-{self.anchor_quantile}-{self.original_measure}'
+
+
+class BootstrappingBySelectingMostLikelyDataPoint:
+    def __init__(self, bootstrap_field):
+        self.bootstrap_field = bootstrap_field
+        self.cluster_borders = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+                                0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+
+    def fit(self, x, y):
+        pass
+
+    def predict(self, x):
+        ret = []
+        if type(x) is not list or type(x) is not tuple:
+            raise ValueError(f'Invalid input. Got {x}')
+
+        for l in x:
+            if type(l) is not list or type(l) is not tuple or not(all(type(i) is int or type(i) is float for i in l)):
+                raise ValueError(f'Invalid input. Got {l}')
+
+            ret += [self.select_element(l)]
+
+        return ret
+
+    def select_element(self, data_points):
+        cluster = self.cluster_datapoints(data_points)
+        cluster = self.select_max_cluster(cluster)
+        data_points = []
+        for v in cluster.values():
+            data_points += v
+
+        cluster = self.cluster_datapoints(data_points)
+        cluster = self.select_max_cluster(cluster)
+        data_points = []
+        for v in cluster.values():
+            data_points += list(v)
+
+        return max(data_points)
+
+    def cluster_datapoints(self, data_points):
+        min_x = min(data_points)
+        max_x = max(data_points)
+        if (max_x - min_x) <= 0.0001:
+            return {0: data_points}
+        normalized_data_points = [(i - min_x) / (max_x - min_x) for i in data_points]
+        clusters = {}
+
+        for i in range(len(data_points)):
+
+            normalized_data_point = normalized_data_points[i]
+            data_point = data_points[i]
+            for cluster in self.cluster_borders:
+                if normalized_data_point <= cluster:
+                    if cluster not in clusters:
+                        clusters[cluster] = []
+                    clusters[cluster] += [data_point]
+                    break
+
+                if cluster >= 1:
+                    raise ValueError('Can not happen: It should be aleady asigned to a cluster. ' +
+                                     f'But element {normalized_data_point} did not found a cluster.')
+
+        return clusters
+
+    @staticmethod
+    def select_max_cluster(clusters):
+        max_elements = max([len(i) for i in clusters.values()])
+
+        ret = {}
+        for k, v in clusters.items():
+            if len(v) < max_elements:
+                continue
+            ret[k] = v
+
+        return ret
+
+    def __str__(self):
+        return f'bs-ml-{self.bootstrap_field}'

@@ -13,7 +13,8 @@ from evaluation_util import evaluate_on_pools, evaluate_on_original_pool_only
 from cross_validation_util import cross_validation_experiment, DEFAULT_SEARCH_SPACE
 from parametrized_bootstrapping_model import ParametrizedBootstrappingModel, ReturnAlways1Model, ReturnAlways0Model,\
     LowerBoundFixedBudgetBootstrappingModel, UpperBoundFixedBudgetBootstrappingModel, LowerBoundDeltaModel,\
-    UpperBoundDeltaModel, ReturnAlwaysX, BootstrappingInducedByCondensedLists
+    UpperBoundDeltaModel, ReturnAlwaysX, BootstrappingInducedByCondensedLists, \
+    BootstrappingBySelectingMostLikelyDataPoint
 
 SHARED_TASKS = {
     'trec-system-runs/trec13/robust': {
@@ -120,9 +121,8 @@ def run_cross_validation(task):
 
     cross_validation_experiment(
         trec=task['trec'],
-        input_measure=['bs-p-1000-ndcg@10-ndcg@10', 'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10',
-                       'bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10',
-                       'bs-run-and-pool-dependent2-1000-ndcg@10-ndcg@10'],
+        input_measure=['bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10',
+                       'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10'],
         models=[ParametrizedBootstrappingModel('rmse', DEFAULT_SEARCH_SPACE),
                 LowerBoundFixedBudgetBootstrappingModel(0.01, DEFAULT_SEARCH_SPACE),
                 LowerBoundFixedBudgetBootstrappingModel(0.05, DEFAULT_SEARCH_SPACE),
@@ -133,6 +133,17 @@ def run_cross_validation(task):
         clean=True,
         working_dir=task['working_directory'],
     )
+
+    for m in ['bs-pool-dependent-1000-ndcg@10-ndcg@10', 'bs-run-dependent-1000-ndcg@10-ndcg@10',
+              'bs-run-and-pool-dependent-1000-ndcg@10-ndcg@10']:
+        cross_validation_experiment(
+            trec=task['trec'],
+            input_measure=[m],
+            models=[BootstrappingBySelectingMostLikelyDataPoint(m)],
+            out_dir=out_dir,
+            clean=False,
+            working_dir=task['working_directory'],
+        )
 
     cross_validation_experiment(
         trec=task['trec'],
