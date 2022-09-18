@@ -221,6 +221,8 @@ def __rename_measure(m):
         return m.lower()
     if m.lower().startswith('bs-ci-'):
         return m.lower()
+    if m.lower().startswith('bs-ml-'):
+        return m.lower()
 
 
 def __process_row(df_row):
