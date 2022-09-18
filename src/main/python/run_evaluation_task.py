@@ -175,7 +175,9 @@ def run_cross_validation(task):
             input_measure=[(m, 'condensed-ndcg@10')],
             models=[BootstrappingInducedByCondensedLists(0.75, m), BootstrappingInducedByCondensedLists(0.8, m),
                     BootstrappingInducedByCondensedLists(0.9, m), BootstrappingInducedByCondensedLists(0.95, m),
-                    BootstrappingInducedByCondensedLists(0.99, m), BootstrappingInducedByCondensedLists(1.25, m)],
+                    BootstrappingInducedByCondensedLists(0.99, m),
+                    # BootstrappingInducedByCondensedLists(1.25, m)
+                    ],
             out_dir=out_dir,
             clean=False,
             working_dir=task['working_directory'],
