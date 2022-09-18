@@ -277,6 +277,12 @@ def report_for_row(df_row, measure, depth):
                  ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
         measures += [(f'{k}-ML-{measure}@{depth}', (f'depth-{depth}-incomplete', f'bs-ml-{v}-{v}-bs-ml-{v}-{v}'))]
 
+    for k, v in [('PBS-P', f'bs-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-RP', f'bs-run-and-pool-dependent-1000-{measure}@{depth}-{measure}@{depth}'),
+                 ('PBS-R', f'bs-run-dependent-1000-{measure}@{depth}-{measure}@{depth}')]:
+        for m in ['75', '90', '95']:
+            measures += [(f'{k}-{m}-{measure}@{depth}', (f'depth-{depth}-incomplete', f'pbs-{m}-bs-ml-{v}-{v}-bs-ml-{v}-{v}'))]
+
     for i in ['upper-bound-0.01', 'upper-bound-0.05', 'lower-bound-0.01', 'lower-bound-0.05']:
         measures += [(f'gsd-{i}-condensed-{measure}@{depth}', (f'depth-{depth}-incomplete',
                                                                f'gsd-{i}-condensed-{measure}@{depth}-condensed-{measure}@{depth}-gsd-{i}-condensed-{measure}@{depth}-condensed-{measure}@{depth}')),
@@ -345,6 +351,10 @@ def data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_un
 
         for p in ['P', 'R', 'RP']:
             measures_to_report += [(f'PBS-{p}-ML', f'PBS-{p}-ML-ndcg@10')]
+
+            for m in ['75', '90', '95']:
+                measures_to_report += [(f'PBS-{p}-{m}', f'PBS-{p}-{m}-ndcg@10')]
+
             for m in ['0.8', '0.9', '0.95', '0.99']:
                 measures_to_report += [(f'PBS-{p}-CL-{m}', f'PBS-{p}-CL-{m}-ndcg@10')]
 
