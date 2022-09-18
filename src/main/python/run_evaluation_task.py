@@ -188,8 +188,8 @@ def run_cross_validation(task):
         cross_validation_experiment(
             trec=task['trec'],
             input_measure=[m],
-            models=[FixedQuantileBootstrappingModel(75, m), FixedQuantileBootstrappingModel(90, m),
-                    FixedQuantileBootstrappingModel(95, m)],
+            models=[FixedQuantileBootstrappingModel(m, 75), FixedQuantileBootstrappingModel(m, 90),
+                    FixedQuantileBootstrappingModel(m, 95)],
             out_dir=out_dir,
             clean=False,
             working_dir=task['working_directory'],
