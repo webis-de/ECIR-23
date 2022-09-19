@@ -465,3 +465,29 @@ def load_df_reconstruction(trec, num_runs_to_keep=100000, failsave=True, min_unj
                     i['precision'] + i['recall']), axis=1)
 
     return df_reconstruction
+
+
+def calculate_error(min_value, max_value, actual, predicted, normalized):
+    actual = min(max(actual, min_value), max_value)
+    predicted = min(max(predicted, min_value), max_value)
+    ret = actual - predicted
+
+    if max_value < min_value:
+        raise ValueError('Some programming error.')
+
+    if normalized is True and max_value-min_value == 0:
+        return 0
+
+    if ret > 0 and normalized is True:
+        min_value = predicted
+        ret = actual
+
+        return (ret-min_value)/(max_value-min_value)
+    elif ret < 0 and normalized is True:
+        max_value = predicted-min_value
+        min_value = 0
+        ret = predicted - actual
+
+        return -(ret-min_value)/(max_value-min_value)
+
+    return ret
