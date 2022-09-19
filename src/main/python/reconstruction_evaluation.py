@@ -2,7 +2,9 @@ import pandas as pd
 from tqdm import tqdm
 from result_analysis_utils import load_evaluations, load_cross_validation_results
 import json
+from os.path import exists
 from glob import glob
+from io import StringIO
 
 
 class DataConstruction:
@@ -200,6 +202,51 @@ class AllApproachesDidNotParticipateInPoolingReconstructionEvaluation:
                     ret.add((s1['system'], s2['system']))
 
         return ret
+
+
+def __persist_dfs(dfs, file_name):
+    if exists(file_name):
+        raise ValueError('')
+
+    ret = {k: v.to_json(lines=True, orient='records') for k, v in dfs.items()}
+
+    json.dump(ret, open(file_name, 'w'))
+
+
+def __load_dfs_or_none(file_name):
+    try:
+        if exists(file_name):
+            ret = json.load(open(file_name, 'r'))
+            return {k:pd.read_json(StringIO(v), lines=True, orient='records') for k, v in ret.items()}
+    except:
+        pass
+
+
+def load_preprocessed_reconstruction_or_from_cache(cache_file='processed-evaluation-results.json'):
+    dfs = __load_dfs_or_none(cache_file)
+    if dfs is not None:
+        return dfs
+
+
+    dfs = {}
+    corpora = {
+        'Robust04': ['trec13'],
+        'CW09': ['trec18', 'trec19', 'trec20', 'trec21'],
+        'CW12': ['trec22', 'trec23']
+    }
+
+    # We follow the preprocessing steps of Zobel et al. and include only the top 75% of the runs to mitigate the effects of low-performing runs
+    runs_to_include = {'Robust04': 82, 'CW09': 24, 'CW12': 22}
+
+    for corpus, trecs in corpora.items():
+        df_for_corpus = []
+        for trec in trecs:
+            df_for_corpus += [
+                load_df_reconstruction(trec, runs_to_include[corpus], True, min_unjudged=0, max_unjudged=0.7)]
+        dfs[corpus] = pd.concat(df_for_corpus)
+
+    __persist_dfs(dfs, cache_file)
+    return __load_dfs_or_none(cache_file)
 
 
 def load_df(trec):
