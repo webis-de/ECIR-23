@@ -115,7 +115,7 @@ def __create_evaluation_tasks(trec_identifier, working_directory):
 
 
 def prepare(trec_identifier, working_directory):
-    #__normalize_runs(trec_identifier, working_directory)
+    __normalize_runs(trec_identifier, working_directory)
     #__create_pools_per_run(trec_identifier, working_directory)
     __create_evaluation_tasks(trec_identifier, working_directory)
 
