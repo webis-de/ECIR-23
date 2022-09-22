@@ -175,5 +175,11 @@ class IncompletePools:
             runs_for_pooling += [run]
         
         assert skipped_runs == len(runs_to_skip)
-        return {k: sorted(list(v)) for k,v in make_top_x_pool(runs_for_pooling, depth).pool.items()}
+        return {k: sorted(list(v)) for k, v in make_top_x_pool(runs_for_pooling, depth).pool.items()}
+
+
+if __name__ == '__main__':
+    #r = normalize_run(TrecRun('src/main/resources/beir/colbert-results-pyterrier.txt'))
+    #r.run_data.to_csv('src/main/resources/beir/colbert-results-normalized-pyterrier.txt', sep=' ', header=False, index=False)
+    print(len(load_all_runs('src/main/resources/unprocessed/trec-system-runs/trec-covid/')))
 
