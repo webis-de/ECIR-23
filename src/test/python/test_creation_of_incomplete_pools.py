@@ -12,19 +12,33 @@ EXPECTED_POOL_ROBUST04_SAMPLES = {
 
 EXPECTED_POOLS_PER_RUN_ON_ROBUST04_SAMPLES = {'pool_entries': {
     10: {
-        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
-        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']}
+        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {
+            '301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']
+        },
+        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {
+            '301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']
+        }
     },
     20: {
-        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {'301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']},
-        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {'301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']}
+        'src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt': {
+            '301': ['doc-juru-01', 'doc-juru-02', 'shared-doc-01']
+        },
+        'src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt': {
+            '301': ['doc-wdo-01', 'doc-wdo-02', 'shared-doc-01']
+        }
     }
 },
-'groups': {'juru': ['src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt'], 'wdo': ['src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt']}}
+ 'groups': {'juru': ['src/test/resources/dummy-run-files-robust04/input.Juru-dummy-01.txt'],
+            'wdo': ['src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt']}
+}
 
 
 def test_creation_of_incomplete_pools_for_small_robust04_samples():
-    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
+    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04',
+                              'src/main/resources/processed/trec-system-runs-groups.json',
+                              'trec-system-runs/trec13/robust',
+                              verbose=False
+                              )
     
     actual = pooling.create_all_incomplete_pools()
     
@@ -32,7 +46,11 @@ def test_creation_of_incomplete_pools_for_small_robust04_samples():
 
 
 def test_creation_of_pool_per_runs():
-    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
+    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04',
+                              'src/main/resources/processed/trec-system-runs-groups.json',
+                              'trec-system-runs/trec13/robust',
+                              verbose=False
+                              )
     
     actual = pooling.pool_per_runs()
 
@@ -40,7 +58,11 @@ def test_creation_of_pool_per_runs():
 
 
 def test_creation_of_pool_for_run():
-    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04', 'src/main/resources/processed/trec-system-runs-groups.json', 'trec-system-runs/trec13/robust')
+    pooling = IncompletePools('src/test/resources/dummy-run-files-robust04',
+                              'src/main/resources/processed/trec-system-runs-groups.json',
+                              'trec-system-runs/trec13/robust',
+                              verbose=False
+    )
     
     actual = {k: v for (k, v) in pooling.create_incomplete_pools_for_run('src/test/resources/dummy-run-files-robust04/input.wdo-dummy-01.txt')}
     expected = {

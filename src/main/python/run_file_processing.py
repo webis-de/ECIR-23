@@ -43,11 +43,15 @@ class RunFileGroups:
         return ret[0] if len(ret) == 1 else None
 
 
-def load_all_runs(run_dir):
+def load_all_runs(run_dir, verbose=True):
     run_dir = Path(str(run_dir))
     ret = {}
     print('Load runs: ')
-    for run in tqdm(list(run_dir.glob('*'))):
+    runs = list(run_dir.glob('*'))
+    if verbose:
+        runs = tqdm(runs)
+
+    for run in runs:
         ret[str(run)] = TrecRun(run)
     return ret
 
@@ -90,10 +94,12 @@ def make_top_x_pool(list_of_runs, depth):
 
 
 class IncompletePools:
-    def __init__(self, run_dir=None, group_definition_file=None, trec_identifier=None, pool_per_run_file=None):
-        self.__runs = load_all_runs(run_dir) if run_dir else None
+    def __init__(self, run_dir=None, group_definition_file=None, trec_identifier=None, pool_per_run_file=None,
+                 verbose=True):
+        self.__runs = load_all_runs(run_dir, verbose) if run_dir else None
         self.__run_file_groups = RunFileGroups(group_definition_file, trec_identifier).assign_runs_to_groups(self.__runs.keys()) if group_definition_file and trec_identifier else None
         self.pool_per_run_file = pool_per_run_file
+        self.verbose = verbose
 
     def pool_per_runs(self):
         if self.pool_per_run_file:
@@ -104,7 +110,11 @@ class IncompletePools:
         ret = {'pool_entries': {'10': {}, '20': {}}, 'groups': self.__run_file_groups}
         
         print('Create Pool Entries for all Runs.')
-        for run_name, run in tqdm(self.__runs.items()):
+        runs_to_process = self.__runs.items()
+        if self.verbose:
+            runs_to_process = tqdm(runs_to_process)
+
+        for run_name, run in runs_to_process:
             for depth in ret['pool_entries'].keys():
                 ret['pool_entries'][depth][run_name] = self.incomplete_pools([i for i in self.__runs.keys() if i != run_name], int(depth))
 

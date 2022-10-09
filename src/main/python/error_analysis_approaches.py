@@ -196,3 +196,28 @@ def rl(doc_id, pos, score=None):
 
 def as_latex(data):
     return ''
+
+
+if __name__ == '__main__':
+    from trectools import TrecEval
+
+    print(TrecEval(create_run([rl('1', 1), rl('0', 2)]), create_qrels([ql('1', 1)])).get_ndcg(depth=2))
+
+    print(TrecEval(create_run([rl('0', 1), rl('1', 2)]), create_qrels([ql('1', 1)])).get_ndcg(depth=2))
+
+    print(TrecEval(create_run([rl('1', 1), rl('2', 2)]), create_qrels([ql('1', 1), ql('2', 2)])).get_ndcg(depth=2))
+
+    print(TrecEval(create_run([rl('1', 1), rl('3', 2)]), create_qrels([ql('1', 1), ql('3', 3)])).get_ndcg(depth=2))
+
+
+    print(TrecEval(create_run([rl('0', 1), rl('1', 2)]), create_qrels([ql('1', 1)])).get_ndcg(depth=2))
+
+
+
+    print(TrecEval(
+        create_run([rl('1', 1), rl('0', 2), rl('3-1', 3), rl('3-2', 4), rl('3-3', 5)]),
+        create_qrels([ql('1', 1), ql('3-1', 3), ql('3-2', 3), ql('3-3', 3)])
+    ).get_ndcg(depth=2))
+
+
+    print(TrecEval(create_run([rl('1', 1), rl('0', 2)]), create_qrels([ql('1', 1)])).get_ndcg(depth=2))
