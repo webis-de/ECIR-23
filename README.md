@@ -1,18 +1,41 @@
-# ECIR 23: Incomplete Judgments
+# ECIR 23: Bootstrapped nDCG Estimation in the Presence of Unjudged Documents
+
+This repository contains the code and a TrecTools Plugin that allows to use bootstrapping to generate a distribution of nDCG scores by sampling judgments for the unjudged documents using run-based and/or pool-based priors.
+This is helpful to estimate the true nDCG score if you have unjudged documents in your ranking and our experiments on three different corpora shows that bootstrapping works better than assuming unjudged documents are non-relevant or using condensed lists.
 
 ## Setup Environment and run unit tests
 
 Run `make` to get an overview of all possible make targets.
 With `make clean .venv`, you can set up the environment and afterwards you can run `make tests` to run all unit tests to check your environment and the code.
 
-## Add Our new Method as Plugin to trectools
+Running the tests with `make tests` should yield an output like this:
 
-TBD.
+```
+......................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 166 tests in 13.630s
 
-## Experiments reported in the Paper
+OK
+```
 
-TBD.
+## Add Our new Method as Plugin to TrecTools
 
+Right now, the bootstrapping plugin is not yet integrated into the official main branch of TrecTools (but we will go for this upon acceptance).
+However, you can already use our Bootstrapping approach with the following code (assumed you have this repository located in <THIS-REPOSITORY>):
+
+```
+from trectools import TrecRun, TrecQrel
+import sys
+sys.path.append('<THIS-REPOSITORY>/src/main/python')
+from bootstrap_utils import evaluate_ndcg
+
+run = TrecRun('path-to-run-file')
+qrels = TrecQrel('path-to-qrel-file')
+
+evaluate_ndcg(run, qrels, depth=10)
+```
+
+The notebook [src/main/ipynb/beir-evaluation.ipynb](src/main/ipynb/beir-evaluation.ipynb) provides use cases.
 
 ## Cached Data for Faster Experimentation
 
@@ -28,4 +51,9 @@ The run files used for the experiments are not publicly available but can be dow
 ```
 ./src/main/resources/download-and-prepare-all-resources.py --user <USER> --password <PASSWORD> --directory src/main/resources/
 ```
+
+## Experiments reported in the Paper
+
+You can find all the notebooks for the experiments in the paper in [src/main/ipynb/](src/main/ipynb/).
+
 

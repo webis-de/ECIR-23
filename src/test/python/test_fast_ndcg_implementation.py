@@ -173,8 +173,3 @@ class TestFastNdcgImplementation(TestCase):
         self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_ONLY_IRRELEVANT, True), 4)
         self.assertAlmostEqual(0.0, fast_ndcg_eval(run, QRELS_ONLY_IRRELEVANT, False), 4)
 
-    def test_permutation_test(self):
-        raise ValueError('ToDo Implement')
-
-    def test_permutation_with_gains(self):
-        raise ValueError('ToDo Implement')

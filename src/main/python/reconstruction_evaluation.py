@@ -249,7 +249,7 @@ def load_preprocessed_reconstruction_or_from_cache(cache_file='processed-evaluat
     return __load_dfs_or_none(cache_file)
 
 
-def load_df(trec):
+def load_df(trec, verbose=True):
     eval_predictions = glob(f'../resources/eval/trec-system-runs/{trec}/*.jsonl')
 
     # eval_predictions += list(load_cross_validation_results(open(f'../resources/processed/cross-validation-results/{trec}/bs-p-1000-ndcg@10-ndcg@10-results.jsonl'), depth=10, return_buffers=True))
@@ -283,7 +283,10 @@ def load_df(trec):
         open(f'../resources/processed/cross-validation-results/{trec}/ndcg@10-results.jsonl'), depth=10,
         return_buffers=True))
 
-    return load_evaluations(tqdm(eval_predictions))
+    if verbose:
+        eval_predictions = tqdm(eval_predictions)
+
+    return load_evaluations(eval_predictions)
 
 
 def report_for_row(df_row, measure, depth):
@@ -366,9 +369,13 @@ def create_aggregated_df(df, measure, depth, loc, runs_to_keep):
     return ret
 
 
-def data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_unjudged=0, max_unjudged=None):
+def data_for_reconstruction_experiments(df, trec, failsave, runs_to_keep, min_unjudged=0, max_unjudged=None, verbose=1):
     ret = {}
-    for run in tqdm(range(len(df['run'].unique()))):
+    runs = range(len(df['run'].unique()))
+    if verbose:
+        runs = tqdm(runs)
+
+    for run in runs:
         try:
             tmp = create_aggregated_df(df, 'ndcg', 10, run, runs_to_keep)
             if tmp is None:
